@@ -4576,8 +4576,19 @@ function App() {
                                   <td className="px-5 py-4">
                                     <div className="flex items-center gap-3.5">
                                       {(item.receipt_photo_link || item.receipt_drive_link) ? (
-                                        <div className="w-10 h-10 rounded-xl shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                                        <div 
+                                          className="w-10 h-10 rounded-xl shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden bg-slate-50 dark:bg-slate-800 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity relative group/img"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const url = getDriveImageUrl(item.receipt_photo_link, item.receipt_drive_link);
+                                            if (url) setViewingActivityImages([url]);
+                                          }}
+                                          title="Click to view full receipt"
+                                        >
                                           <img referrerPolicy="no-referrer" src={getDriveImageUrl(item.receipt_photo_link, item.receipt_drive_link) || "https://placehold.co/40"} alt="Receipt" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span class="text-[8px] font-bold text-slate-400 p-1 text-center leading-tight">Private</span>'; }} />
+                                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
+                                            <Search size={14} className="text-white" />
+                                          </div>
                                         </div>
                                       ) : (
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border shadow-sm ${themeClasses.bgPrimaryLight}/10 ${themeClasses.textPrimaryLight} border-[#062A78]/20`}>
@@ -6024,9 +6035,10 @@ function App() {
                         alt="Expense Receipt"
                         className="w-full max-h-48 object-contain hover:scale-[1.03] transition-transform cursor-zoom-in rounded-xl"
                         onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<a href="' + (selectedExpense.receipt_drive_link || selectedExpense.receipt_photo_link) + '" target="_blank" class="block w-full py-4 text-center border-2 border-dashed border-red-200 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50">Private Google Drive Image. Click to view externally.</a>'; }}
-                        onClick={() => {
-                          const w = window.open();
-                          if (w) w.document.write(`<img src="${getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link)}" style="max-width:100%; max-height:100vh; display:block; margin:auto;" />`);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const url = getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link);
+                          if (url) setViewingActivityImages([url]);
                         }}
                       />
                     ) : (
