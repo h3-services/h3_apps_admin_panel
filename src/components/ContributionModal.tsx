@@ -138,18 +138,40 @@ export const ContributionModal: React.FC<ContributionModalProps> = ({ isOpen, on
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-slate-800">
-        <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center rounded-t-3xl">
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl ${themeClasses.bgPrimaryLight}/10 ${themeClasses.textPrimaryDark} dark:text-white`}>
-              <Receipt size={22} />
+        <div className="sticky top-0 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl px-6 sm:px-7 py-5 border-b border-slate-100 dark:border-slate-800/80 flex justify-between items-center rounded-t-3xl shadow-sm relative overflow-hidden">
+          {/* Subtle Ambient Glow */}
+          <div className="absolute -top-10 -left-10 w-36 h-36 bg-[#062A78]/10 dark:bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+          <div className="flex items-center gap-3.5 relative z-10">
+            {/* Modern Icon Badge */}
+            <div className="relative shrink-0">
+              <div className={`w-12 h-12 rounded-2xl ${themeClasses.bgGradientMain} text-white flex items-center justify-center shadow-lg shadow-[#062A78]/25 ring-4 ring-[#062A78]/10 dark:ring-blue-400/15`}>
+                <Receipt size={22} className="text-white" strokeWidth={2.2} />
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900 shadow-sm"></div>
             </div>
+
             <div>
-              <h2 className="text-xl font-black text-slate-900 dark:text-white">Record Contribution</h2>
-              <p className="text-xs font-bold text-slate-500">Log donation and send receipt</p>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                  Record Contribution
+                </h2>
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/50">
+                  Donation
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                Log donation and generate instant invoice receipt
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-            <X size={20} />
+
+          <button 
+            onClick={onClose} 
+            className="relative z-10 p-2.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-200 hover:rotate-90 active:scale-95 shadow-sm"
+            aria-label="Close"
+          >
+            <X size={18} strokeWidth={2.5} />
           </button>
         </div>
 

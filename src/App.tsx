@@ -2538,7 +2538,7 @@ function App() {
                           </div>
                         </div>
 
-                        <div className="w-full bg-white dark:bg-slate-950 rounded-2xl p-4 shadow-sm space-y-3 mt-auto border border-slate-100 dark:border-slate-800 overflow-y-auto flex-1 min-h-[80px] custom-scrollbar">
+                        <div className="w-full bg-white dark:bg-slate-950 rounded-2xl p-4 shadow-sm space-y-3 mt-auto border border-slate-100 dark:border-slate-800 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
                           {calculatedData.map((cat, i) => (
                             <div key={i} className="flex items-center justify-between shrink-0">
                               <div className="flex items-center gap-3">
@@ -4247,117 +4247,113 @@ function App() {
             <div className="space-y-6">
 
               {/* TOP HERO BANNER & STATS CARD (MATCHING MOBILE SCREENSHOT) */}
-              <div className="flex flex-col lg:flex-row gap-6">
-                {/* Total Spend Cards - Left Side */}
-                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
-                  {/* INR Card */}
-                  <div className={`relative overflow-hidden rounded-[2rem] p-6 text-white ${themeClasses.bgGradientMain} shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[160px]`}>
-                    <div className="absolute -right-20 -top-20 w-48 h-48 bg-white/10 rounded-full blur-2xl mix-blend-overlay"></div>
-                    <div className="absolute -bottom-20 -left-10 w-32 h-32 bg-black/10 rounded-full blur-xl mix-blend-overlay"></div>
-                    
-                    <div className="space-y-1 relative z-10">
-                      <span className="text-white/80 text-[10px] font-extrabold uppercase tracking-widest inline-block mb-1">
-                        TOTAL SPEND (INR)
-                      </span>
-                      <div className="flex items-baseline gap-1.5 pt-1">
-                        <span className="text-2xl font-semibold text-white/90">₹</span>
-                        <h3 className="text-4xl leading-none font-black tracking-tight font-sans text-white">
-                          {Math.round(filteredFinanceExpenses.reduce((sum, e) => sum + e.amount, 0)).toLocaleString('en-IN')}
-                        </h3>
-                      </div>
+              {/* TOP HERO BANNER & STATS CARDS (DYNAMIC EQUAL SIZING) */}
+              <div className={`grid grid-cols-1 sm:grid-cols-2 ${expenseCategoryFilter !== 'ALL' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 lg:gap-6`}>
+                {/* INR Card */}
+                <div className={`relative overflow-hidden rounded-[2rem] p-6 text-white ${themeClasses.bgGradientMain} shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[170px] h-full`}>
+                  <div className="absolute -right-20 -top-20 w-48 h-48 bg-white/10 rounded-full blur-2xl mix-blend-overlay"></div>
+                  <div className="absolute -bottom-20 -left-10 w-32 h-32 bg-black/10 rounded-full blur-xl mix-blend-overlay"></div>
+                  
+                  <div className="space-y-1 relative z-10">
+                    <span className="text-white/80 text-[10px] font-extrabold uppercase tracking-widest inline-block mb-1">
+                      TOTAL SPEND (INR)
+                    </span>
+                    <div className="flex items-baseline gap-1.5 pt-1">
+                      <span className="text-2xl font-semibold text-white/90">₹</span>
+                      <h3 className="text-3xl xl:text-4xl leading-none font-black tracking-tight font-sans text-white">
+                        {Math.round(filteredFinanceExpenses.reduce((sum, e) => sum + e.amount, 0)).toLocaleString('en-IN')}
+                      </h3>
                     </div>
-                    <div className="mt-6 relative z-10 flex items-center justify-between">
-                      <button
-                        onClick={() => setShowExpenseModal(true)}
-                        className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border border-white/30 font-semibold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.02] active:scale-95"
-                      >
-                        <Plus size={16} className="text-white" />
-                        Add Record
-                      </button>
-                      
-                      {/* Decorative mini chart */}
-                      <div className="flex gap-1.5 items-end h-8 opacity-60">
-                        {[5, 8, 4, 9, 7, 10].map((h, i) => (
+                  </div>
+                  <div className="mt-6 relative z-10 flex items-center justify-between">
+                    <button
+                      onClick={() => setShowExpenseModal(true)}
+                      className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border border-white/30 font-semibold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.02] active:scale-95"
+                    >
+                      <Plus size={16} className="text-white" />
+                      Add Record
+                    </button>
+                    
+                    {/* Decorative mini chart */}
+                    <div className="flex gap-1.5 items-end h-8 opacity-60">
+                      {[5, 8, 4, 9, 7, 10].map((h, i) => (
+                        <div key={i} className="w-1.5 bg-white rounded-t-sm animate-pulse" style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* USD Card */}
+                <div className={`relative overflow-hidden rounded-[2rem] p-6 text-white ${themeClasses.bgGradientMain} shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[170px] h-full`}>
+                  <div className="absolute -right-20 -top-20 w-48 h-48 bg-white/10 rounded-full blur-2xl mix-blend-overlay"></div>
+                  <div className="absolute -bottom-20 -left-10 w-32 h-32 bg-black/10 rounded-full blur-xl mix-blend-overlay"></div>
+                  
+                  <div className="space-y-1 relative z-10">
+                    <span className="text-white/80 text-[10px] font-extrabold uppercase tracking-widest inline-block mb-1">
+                      EST. SPEND (USD)
+                    </span>
+                    <div className="flex items-baseline gap-1.5 pt-1">
+                      <span className="text-2xl font-semibold text-white/90">$</span>
+                      <h3 className="text-3xl xl:text-4xl leading-none font-black tracking-tight font-sans text-white">
+                        {(filteredFinanceExpenses.reduce((sum, e) => sum + e.amount, 0) / 83).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="mt-6 relative z-10 flex items-center justify-end opacity-60 h-[34px]">
+                    {/* Decorative mini chart */}
+                    <div className="flex gap-1.5 items-end h-8">
+                      {[4, 7, 5, 8, 10, 6].map((h, i) => (
+                        <div key={i} className="w-1.5 bg-white rounded-t-sm animate-pulse" style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total Records */}
+                <div className={`relative overflow-hidden ${themeClasses.bgGradientMain} border border-white/10 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[170px] h-full text-center group`}>
+                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                  <div className="flex flex-col items-center justify-center relative z-10 my-auto">
+                    <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-3 shadow-sm border border-white/20">
+                      <FileText size={24} strokeWidth={2} />
+                    </div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-white/80 mb-1 block">Total Records</span>
+                    <strong className="text-4xl xl:text-5xl text-white font-extrabold tracking-tight leading-none">{expenses.length}</strong>
+                  </div>
+                  
+                  {/* Decorative mini chart */}
+                  <div className="relative z-10 flex items-center justify-end opacity-40 h-[24px]">
+                    <div className="flex gap-1.5 items-end h-6">
+                      {[6, 4, 8, 5, 10, 7].map((h, i) => (
+                        <div key={i} className="w-1.5 bg-white rounded-t-sm animate-pulse" style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filtered Category Records */}
+                {expenseCategoryFilter !== 'ALL' && (
+                  <div className={`relative overflow-hidden ${themeClasses.bgGradientMain} border border-white/10 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[170px] h-full text-center group animate-fade-in`}>
+                    <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 pointer-events-none"></div>
+                    <div className="flex flex-col items-center justify-center relative z-10 my-auto">
+                      <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-3 shadow-sm border border-white/20">
+                        <Filter size={24} strokeWidth={2} />
+                      </div>
+                      <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-white/80 mb-1 block truncate max-w-full px-2">{expenseCategoryFilter} Records</span>
+                      <strong className="text-4xl xl:text-5xl text-white font-extrabold tracking-tight leading-none">
+                        {expenses.filter(e => e.category && e.category.toLowerCase() === expenseCategoryFilter.toLowerCase()).length}
+                      </strong>
+                    </div>
+                    
+                    {/* Decorative mini chart */}
+                    <div className="relative z-10 flex items-center justify-end opacity-40 h-[24px]">
+                      <div className="flex gap-1.5 items-end h-6">
+                        {[3, 7, 4, 8, 5, 9].map((h, i) => (
                           <div key={i} className="w-1.5 bg-white rounded-t-sm animate-pulse" style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
                         ))}
                       </div>
                     </div>
                   </div>
-
-                  {/* USD Card */}
-                  <div className={`relative overflow-hidden rounded-[2rem] p-6 text-white ${themeClasses.bgGradientMain} shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[160px]`}>
-                    <div className="absolute -right-20 -top-20 w-48 h-48 bg-white/10 rounded-full blur-2xl mix-blend-overlay"></div>
-                    <div className="absolute -bottom-20 -left-10 w-32 h-32 bg-black/10 rounded-full blur-xl mix-blend-overlay"></div>
-                    
-                    <div className="space-y-1 relative z-10">
-                      <span className="text-white/80 text-[10px] font-extrabold uppercase tracking-widest inline-block mb-1">
-                        EST. SPEND (USD)
-                      </span>
-                      <div className="flex items-baseline gap-1.5 pt-1">
-                        <span className="text-2xl font-semibold text-white/90">$</span>
-                        <h3 className="text-4xl leading-none font-black tracking-tight font-sans text-white">
-                          {(filteredFinanceExpenses.reduce((sum, e) => sum + e.amount, 0) / 83).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </h3>
-                      </div>
-                    </div>
-                    <div className="mt-6 relative z-10 flex items-center justify-end opacity-60 h-[34px]">
-                      {/* Decorative mini chart */}
-                      <div className="flex gap-1.5 items-end h-8">
-                        {[4, 7, 5, 8, 10, 6].map((h, i) => (
-                          <div key={i} className="w-1.5 bg-white rounded-t-sm animate-pulse" style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mini Stats - Right Side */}
-                <div className="w-full lg:w-1/2 flex flex-col">
-                  {/* Mini Stats Grid */}
-                  <div className={`grid grid-cols-1 sm:grid-cols-2 gap-6 flex-1 h-full transition-all`}>
-                    <div className="relative overflow-hidden bg-[#062A78] dark:from-[#062A78]/10 dark:to-[#062A78]/5 border border-[#062A78]/30 rounded-[2rem] p-6 shadow-sm flex flex-col justify-center items-center text-center group h-full">
-                      <div className="absolute -right-10 -top-10 w-32 h-32 bg-[#062A78]/30 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                      <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-4 relative z-10 shadow-sm border border-white/20">
-                        <FileText size={24} strokeWidth={2} />
-                      </div>
-                      <div className="relative z-10">
-                        <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-white/80 mb-1 block">Total Records</span>
-                        <strong className="text-5xl text-white font-extrabold tracking-tight">{expenses.length}</strong>
-                      </div>
-                      
-                      {/* Decorative mini chart */}
-                      <div className="absolute bottom-6 right-6 flex gap-1.5 items-end h-8 opacity-30">
-                        {[6, 4, 8, 5, 10, 7].map((h, i) => (
-                          <div key={i} className={`w-1.5 ${themeClasses.bgGradientMain} rounded-t-sm animate-pulse`} style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
-                        ))}
-                      </div>
-                    </div>
-
-
-                    
-                    {expenseCategoryFilter !== 'ALL' && (
-                      <div className="relative overflow-hidden bg-[#062A78] dark:from-[#062A78]/10 dark:to-[#062A78]/5 border border-[#062A78]/30 rounded-[2rem] p-6 shadow-sm flex flex-col justify-center items-center text-center group animate-fade-in h-full">
-                        <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-[#062A78]/30 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 pointer-events-none"></div>
-                        <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-4 relative z-10 shadow-sm border border-white/20">
-                          <Filter size={24} strokeWidth={2} />
-                        </div>
-                        <div className="relative z-10">
-                          <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-white/80 mb-1 block">{expenseCategoryFilter} Records</span>
-                          <strong className="text-5xl text-white font-extrabold tracking-tight">
-                            {expenses.filter(e => e.category && e.category.toLowerCase() === expenseCategoryFilter.toLowerCase()).length}
-                          </strong>
-                        </div>
-                        
-                        {/* Decorative mini chart */}
-                        <div className="absolute bottom-6 right-6 flex gap-1.5 items-end h-8 opacity-30">
-                          {[3, 7, 4, 8, 5, 9].map((h, i) => (
-                            <div key={i} className={`w-1.5 ${themeClasses.bgGradientMain} rounded-t-sm animate-pulse`} style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* CONTROLS HEADER: SUB-TABS (All Records | Analytics), CATEGORY FILTERS */}
@@ -4867,9 +4863,9 @@ function App() {
                           </div>
                         </div>
 
-                        <div className="w-full bg-white dark:bg-slate-950 rounded-2xl p-4 shadow-sm space-y-3 mt-auto border border-slate-100 dark:border-slate-800">
+                        <div className="w-full bg-white dark:bg-slate-950 rounded-2xl p-4 shadow-sm space-y-3 mt-auto border border-slate-100 dark:border-slate-800 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
                           {calculatedData.map((cat, i) => (
-                            <div key={i} className="flex items-center justify-between">
+                            <div key={i} className="flex items-center justify-between shrink-0">
                               <div className="flex items-center gap-3">
                                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }}></div>
                                 <div className={`w-6 h-6 rounded-md flex items-center justify-center ${cat.bg}`}>
