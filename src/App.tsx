@@ -339,6 +339,7 @@ function App() {
   const [expenseSubTab, setExpenseSubTab] = useState<'records' | 'analytics'>('records');
   const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string>('ALL');
   const [expenseMonthFilter, setExpenseMonthFilter] = useState<string>('ALL');
+  const [expenseReceiptFilter, setExpenseReceiptFilter] = useState<'ALL' | 'WITH_RECEIPT' | 'WITHOUT_RECEIPT'>('ALL');
   const [expenseSearchQuery, setExpenseSearchQuery] = useState<string>('');
 
 
@@ -2018,13 +2019,20 @@ function App() {
       } catch {}
     }
 
+    let receiptMatch = true;
+    if (expenseReceiptFilter === 'WITH_RECEIPT') {
+      receiptMatch = !!(e.receipt_photo_link || e.receipt_drive_link);
+    } else if (expenseReceiptFilter === 'WITHOUT_RECEIPT') {
+      receiptMatch = !(e.receipt_photo_link || e.receipt_drive_link);
+    }
+
     const query = expenseSearchQuery.trim().toLowerCase();
     const searchMatch = !query ||
       (e.created_by_name && e.created_by_name.toLowerCase().includes(query)) ||
       (e.target_group && e.target_group.toLowerCase().replace(/_/g, ' ').includes(query)) ||
       (e.title && e.title.toLowerCase().includes(query)) ||
       (e.category && e.category.toLowerCase().includes(query));
-    return catMatch && monthMatch && searchMatch;
+    return catMatch && monthMatch && searchMatch && receiptMatch;
   });
 
 
@@ -4488,6 +4496,18 @@ function App() {
                         Showing {filteredFinanceExpenses.length} of {expenses.length} Expense Logs
                         {expenseSearchQuery && <span className="text-slate-800 dark:text-teal-400 font-semibold ml-1.5">(Filtered by "{expenseSearchQuery}")</span>}
                       </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-slate-500 hidden sm:inline-block">Receipt:</span>
+                        <select
+                          value={expenseReceiptFilter}
+                          onChange={(e) => setExpenseReceiptFilter(e.target.value as any)}
+                          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 rounded-lg px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                        >
+                          <option value="ALL">All ({expenses.length})</option>
+                          <option value="WITH_RECEIPT">With Image ({expenses.filter(e => e.receipt_photo_link || e.receipt_drive_link).length})</option>
+                          <option value="WITHOUT_RECEIPT">Without Image ({expenses.filter(e => !(e.receipt_photo_link || e.receipt_drive_link)).length})</option>
+                        </select>
+                      </div>
                     </div>
 
                     <div className="overflow-x-auto w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
