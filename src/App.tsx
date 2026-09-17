@@ -2005,9 +2005,15 @@ function App() {
     let monthMatch = true;
     if (expenseMonthFilter !== 'ALL') {
       try {
-        const d = new Date(e.date);
-        if (!isNaN(d.getTime())) {
-          monthMatch = d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) === expenseMonthFilter;
+        if (e.date) {
+          const d = new Date(e.date);
+          if (!isNaN(d.getTime())) {
+            monthMatch = d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) === expenseMonthFilter;
+          } else {
+            monthMatch = false; // Invalid date format
+          }
+        } else {
+          monthMatch = false;
         }
       } catch {}
     }
@@ -4248,7 +4254,7 @@ function App() {
 
               {/* TOP HERO BANNER & STATS CARD (MATCHING MOBILE SCREENSHOT) */}
               {/* TOP HERO BANNER & STATS CARDS (DYNAMIC EQUAL SIZING) */}
-              <div className={`grid grid-cols-1 sm:grid-cols-2 ${expenseCategoryFilter !== 'ALL' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 lg:gap-6`}>
+              <div className={`grid grid-cols-1 sm:grid-cols-2 ${expenseCategoryFilter !== 'ALL' && expenseMonthFilter !== 'ALL' ? 'lg:grid-cols-5' : (expenseCategoryFilter !== 'ALL' || expenseMonthFilter !== 'ALL' ? 'lg:grid-cols-4' : 'lg:grid-cols-3')} gap-4 lg:gap-6`}>
                 {/* INR Card */}
                 <div className={`relative overflow-hidden rounded-[2rem] p-6 text-white ${themeClasses.bgGradientMain} shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[170px] h-full`}>
                   <div className="absolute -right-20 -top-20 w-48 h-48 bg-white/10 rounded-full blur-2xl mix-blend-overlay"></div>
@@ -4348,6 +4354,35 @@ function App() {
                     <div className="relative z-10 flex items-center justify-end opacity-40 h-[24px]">
                       <div className="flex gap-1.5 items-end h-6">
                         {[3, 7, 4, 8, 5, 9].map((h, i) => (
+                          <div key={i} className="w-1.5 bg-white rounded-t-sm animate-pulse" style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Filtered Month Records */}
+                {expenseMonthFilter !== 'ALL' && (
+                  <div className={`relative overflow-hidden ${themeClasses.bgGradientMain} border border-white/10 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[170px] h-full text-center group animate-fade-in`}>
+                    <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 pointer-events-none"></div>
+                    <div className="flex flex-col items-center justify-center relative z-10 my-auto">
+                      <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-3 shadow-sm border border-white/20">
+                        <Filter size={24} strokeWidth={2} />
+                      </div>
+                      <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-white/80 mb-1 block truncate max-w-full px-2">{expenseMonthFilter} Records</span>
+                      <strong className="text-4xl xl:text-5xl text-white font-extrabold tracking-tight leading-none">
+                        {expenses.filter(e => {
+                          if (!e.date) return false;
+                          const d = new Date(e.date);
+                          return !isNaN(d.getTime()) && d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) === expenseMonthFilter;
+                        }).length}
+                      </strong>
+                    </div>
+                    
+                    {/* Decorative mini chart */}
+                    <div className="relative z-10 flex items-center justify-end opacity-40 h-[24px]">
+                      <div className="flex gap-1.5 items-end h-6">
+                        {[5, 2, 8, 4, 9, 6].map((h, i) => (
                           <div key={i} className="w-1.5 bg-white rounded-t-sm animate-pulse" style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
                         ))}
                       </div>
