@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion } from 'motion/react';
 import toast, { Toaster } from 'react-hot-toast';
 import { themeClasses, colors } from './theme';
@@ -78,7 +78,19 @@ import {
   Package,
   Droplets,
   Laptop,
-  MoreHorizontal
+  MoreHorizontal,
+  Eye,
+  Upload,
+  FileCheck,
+  FileX,
+  AlertTriangle,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
+  Link2,
+  ExternalLink,
+  CheckCheck,
+  Split
 } from 'lucide-react';
 import CountUp from './components/CountUp';
 import { EntityCreationModal } from './components/EntityCreationModal';
@@ -336,16 +348,51 @@ function App() {
   const [adminCount, setAdminCount] = useState<number>(0);
   const [dashboardStats, setDashboardStats] = useState<any>(null);
   const [expenseAnalytics, setExpenseAnalytics] = useState<any>(null);
-  const [expenseSubTab, setExpenseSubTab] = useState<'records' | 'analytics'>('records');
+  const [expenseSubTab, setExpenseSubTab] = useState<'records' | 'receipts' | 'analytics'>('records');
   const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string>('ALL');
   const [expenseMonthFilter, setExpenseMonthFilter] = useState<string>('ALL');
-  const [expenseReceiptFilter, setExpenseReceiptFilter] = useState<'ALL' | 'WITH_RECEIPT' | 'WITHOUT_RECEIPT'>('ALL');
   const [expenseSearchQuery, setExpenseSearchQuery] = useState<string>('');
+  const [expenseReceiptFilter, setExpenseReceiptFilter] = useState<'ALL' | 'WITH_RECEIPT' | 'WITHOUT_RECEIPT'>('ALL');
+  const [receiptTabStatusFilter, setReceiptTabStatusFilter] = useState<'WITH_RECEIPT' | 'WITHOUT_RECEIPT' | 'ALL' | 'MISMATCH' | 'SHARED'>('WITH_RECEIPT');
+  const [recordsPage, setRecordsPage] = useState<number>(1);
+  const [recordsPerPage, setRecordsPerPage] = useState<number>(25);
+  const [receiptsPage, setReceiptsPage] = useState<number>(1);
+  const [receiptsPerPage, setReceiptsPerPage] = useState<number>(25);
+  const [viewingReceiptModalUrl, setViewingReceiptModalUrl] = useState<string | null>(null);
+  const [uploadingReceiptExpenseId, setUploadingReceiptExpenseId] = useState<string | null>(null);
+  const receiptFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Rapid Receipt Audit & Reconciliation states
+  const [isAuditModeOpen, setIsAuditModeOpen] = useState<boolean>(false);
+  const [auditCurrentIndex, setAuditCurrentIndex] = useState<number>(0);
+  const [auditFilter, setAuditFilter] = useState<'ALL' | 'MISMATCH' | 'SHARED' | 'UNREVIEWED'>('ALL');
+  const [auditImageRotation, setAuditImageRotation] = useState<number>(0);
+  const [auditImageZoom, setAuditImageZoom] = useState<number>(1);
+  const [auditBillInput, setAuditBillInput] = useState<string>('');
+  const [auditNoteInput, setAuditNoteInput] = useState<string>('');
+  const [expenseAudits, setExpenseAudits] = useState<Record<string, {
+    billAmount?: number;
+    status: 'VERIFIED_MATCH' | 'MISMATCH' | 'SPLIT_BILL' | 'UNREVIEWED';
+    note?: string;
+    reviewedAt?: string;
+  }>>(() => {
+    try {
+      const saved = localStorage.getItem('h3_expense_receipt_audits');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
 
 
   const [isExpenseSearchExpanded, setIsExpenseSearchExpanded] = useState<boolean>(false);
   const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [isEditingModalAmount, setIsEditingModalAmount] = useState<boolean>(false);
+  const [modalAmountInput, setModalAmountInput] = useState<string>('');
+  const [modalReceiptBillInput, setModalReceiptBillInput] = useState<string>('');
+  const [modalReconcileNote, setModalReconcileNote] = useState<string>('');
+  const [showSharedDetails, setShowSharedDetails] = useState<boolean>(false);
   const [newExpenseTitle, setNewExpenseTitle] = useState<string>('');
   const [newExpenseCategory, setNewExpenseCategory] = useState<string>('Other');
   const [newExpenseAmount, setNewExpenseAmount] = useState<string>('');
@@ -787,18 +834,19 @@ function App() {
     }
   }, [isAuthenticated]);
 
-  // Poll Dashboard Stats every 5 seconds for live updates
+  // Poll Dashboard Stats every 30 seconds for live updates (skip when tab is backgrounded)
   useEffect(() => {
     if (!isAuthenticated || activeTab !== 'Dashboard') return;
     
     const intervalId = setInterval(async () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       try {
         const liveStats = await apiService.getAdminDashboard();
         setDashboardStats(liveStats);
       } catch (err) {
         console.error("Failed to fetch live dashboard stats", err);
       }
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(intervalId);
   }, [isAuthenticated, activeTab]);
@@ -1939,6 +1987,95 @@ function App() {
     }
   };
 
+  const handleUploadReceiptForExpense = async (expenseId: string, file: File) => {
+    const toastId = toast.loading('Uploading receipt...');
+    try {
+      await apiService.uploadReceipt(expenseId, file);
+      const previewUrl = URL.createObjectURL(file);
+      setExpenses(prev => prev.map(exp => {
+        if (exp.id === expenseId) {
+          return {
+            ...exp,
+            receipt_photo_link: previewUrl,
+            receipt_url: previewUrl
+          };
+        }
+        return exp;
+      }));
+      setSelectedExpense(prev => {
+        if (prev && prev.id === expenseId) {
+          return {
+            ...prev,
+            receipt_photo_link: previewUrl,
+            receipt_url: previewUrl
+          };
+        }
+        return prev;
+      });
+      toast.success('Receipt attached successfully!', { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to upload receipt', { id: toastId });
+    }
+  };
+
+  const handleUpdateExpenseAmount = (id: string, newAmount: number, auditNote?: string) => {
+    setExpenses(prev => prev.map(exp => {
+      if (exp.id === id) {
+        return {
+          ...exp,
+          amount: newAmount,
+          notes: auditNote ? `${exp.notes || ''} [Reconciled: ${auditNote}]`.trim() : exp.notes
+        };
+      }
+      return exp;
+    }));
+    setSelectedExpense(prev => {
+      if (prev && prev.id === id) {
+        return {
+          ...prev,
+          amount: newAmount,
+          notes: auditNote ? `${prev.notes || ''} [Reconciled: ${auditNote}]`.trim() : prev.notes
+        };
+      }
+      return prev;
+    });
+    setExpenseAudits(prev => {
+      const updated = {
+        ...prev,
+        [id]: {
+          billAmount: newAmount,
+          status: 'VERIFIED_MATCH' as const,
+          note: auditNote || `Amount corrected to ₹${newAmount.toLocaleString('en-IN')}`,
+          reviewedAt: new Date().toISOString()
+        }
+      };
+      try { localStorage.setItem('h3_expense_receipt_audits', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    apiService.updateExpenseAmount(id, newAmount, auditNote).catch(() => {});
+    toast.success(`Expense amount updated to ₹${newAmount.toLocaleString('en-IN')}`);
+  };
+
+  const handleSaveAuditRecord = (id: string, status: 'VERIFIED_MATCH' | 'MISMATCH' | 'SPLIT_BILL' | 'UNREVIEWED', billAmount?: number, note?: string) => {
+    setExpenseAudits(prev => {
+      const updated = {
+        ...prev,
+        [id]: {
+          billAmount: billAmount !== undefined ? billAmount : prev[id]?.billAmount,
+          status,
+          note: note !== undefined ? note : prev[id]?.note,
+          reviewedAt: new Date().toISOString()
+        }
+      };
+      try { localStorage.setItem('h3_expense_receipt_audits', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    if (status === 'VERIFIED_MATCH') toast.success('Marked as Verified Match');
+    else if (status === 'SPLIT_BILL') toast.success('Marked as Split / Partial Bill');
+    else if (status === 'MISMATCH') toast.error('Flagged as Amount Mismatch');
+  };
+
   const handleDeleteExpense = async (id: string) => {
     setExpenses(prev => prev.filter(e => e.id !== id));
     await apiService.deleteExpense(id);
@@ -1973,67 +2110,313 @@ function App() {
     await apiService.updateExpenseStatus(id, newStatus, approve ? approverName : null);
   };
 
-  // Calculated Stats
-  const pendingLeaves = leaveRequests.filter(r => r.status === 'Pending').length;
-  const avgAttendance = parseFloat((students.reduce((sum, s) => sum + s.attendance, 0) / students.length).toFixed(1));
+  // Calculated Stats (memoized)
+  const pendingLeaves = useMemo(() => leaveRequests.filter(r => r.status === 'Pending').length, [leaveRequests]);
+  const avgAttendance = useMemo(() => {
+    if (!students.length) return 0;
+    return parseFloat((students.reduce((sum, s) => sum + (s.attendance || 0), 0) / students.length).toFixed(1));
+  }, [students]);
 
-  // Filtered Lists
+  // Filtered Lists (memoized)
+  const filteredParents = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return parents;
+    return parents.filter(parent =>
+      parent.name.toLowerCase().includes(q) ||
+      (parent.childName && parent.childName.toLowerCase().includes(q))
+    );
+  }, [parents, searchQuery]);
 
-  const filteredParents = parents.filter(parent =>
-    parent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (parent.childName && parent.childName.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredVolunteers = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return volunteers;
+    return volunteers.filter(vol =>
+      vol.name.toLowerCase().includes(q) ||
+      (vol.email && vol.email.toLowerCase().includes(q)) ||
+      (vol.program && vol.program.toLowerCase().includes(q))
+    );
+  }, [volunteers, searchQuery]);
 
-  const filteredVolunteers = volunteers.filter(vol =>
-    vol.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (vol.email && vol.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (vol.program && vol.program.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredDonors = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return donors.filter(donor => {
+      let match = true;
+      if (q) match = match && donor.name.toLowerCase().includes(q);
+      if (donorColFilters.name) match = match && donor.name.toLowerCase().includes(donorColFilters.name.toLowerCase());
+      if (donorColFilters.category) match = match && (donor.donorType || '').toLowerCase().includes(donorColFilters.category.toLowerCase());
+      if (donorColFilters.contribution) match = match && (donor.formattedAmount || '').toLowerCase().includes(donorColFilters.contribution.toLowerCase());
+      if (donorColFilters.phone) match = match && (donor.phone || '').toLowerCase().includes(donorColFilters.phone.toLowerCase());
+      if (donorColFilters.status) match = match && (donor.status || '').toLowerCase().includes(donorColFilters.status.toLowerCase());
+      return match;
+    });
+  }, [donors, searchQuery, donorColFilters]);
 
-  const filteredDonors = donors.filter(donor => {
-    let match = true;
-    if (searchQuery) match = match && donor.name.toLowerCase().includes(searchQuery.toLowerCase());
-    if (donorColFilters.name) match = match && donor.name.toLowerCase().includes(donorColFilters.name.toLowerCase());
-    if (donorColFilters.category) match = match && (donor.donorType || '').toLowerCase().includes(donorColFilters.category.toLowerCase());
-    if (donorColFilters.contribution) match = match && (donor.formattedAmount || '').toLowerCase().includes(donorColFilters.contribution.toLowerCase());
-    if (donorColFilters.phone) match = match && (donor.phone || '').toLowerCase().includes(donorColFilters.phone.toLowerCase());
-    if (donorColFilters.status) match = match && (donor.status || '').toLowerCase().includes(donorColFilters.status.toLowerCase());
-    return match;
-  });
-  const filteredFinanceExpenses = expenses.filter(e => {
-    const catMatch = expenseCategoryFilter === 'ALL' || (e.category && e.category.toLowerCase() === expenseCategoryFilter.toLowerCase());
-    
-    let monthMatch = true;
-    if (expenseMonthFilter !== 'ALL') {
+  const hasReceipt = useCallback((e: Expense): boolean => {
+    return Boolean(
+      (e.receipt_photo_link && typeof e.receipt_photo_link === 'string' && e.receipt_photo_link.trim() !== '' && e.receipt_photo_link !== 'null' && e.receipt_photo_link !== 'undefined') ||
+      (e.receipt_drive_link && typeof e.receipt_drive_link === 'string' && e.receipt_drive_link.trim() !== '' && e.receipt_drive_link !== 'null' && e.receipt_drive_link !== 'undefined') ||
+      ((e as any).receipt_url && typeof (e as any).receipt_url === 'string' && String((e as any).receipt_url).trim() !== '' && (e as any).receipt_url !== 'null')
+    );
+  }, []);
+
+  const {
+    totalWithReceipts,
+    totalWithoutReceipts,
+    totalWithReceiptsAmount,
+    totalWithoutReceiptsAmount,
+    receiptComplianceRate
+  } = useMemo(() => {
+    const withRec: Expense[] = [];
+    const withoutRec: Expense[] = [];
+    let withAmount = 0;
+    let withoutAmount = 0;
+    for (let i = 0; i < expenses.length; i++) {
+      const e = expenses[i];
+      if (hasReceipt(e)) {
+        withRec.push(e);
+        withAmount += (e.amount || 0);
+      } else {
+        withoutRec.push(e);
+        withoutAmount += (e.amount || 0);
+      }
+    }
+    const rate = expenses.length > 0 ? Math.round((withRec.length / expenses.length) * 100) : 0;
+    return {
+      totalWithReceipts: withRec,
+      totalWithoutReceipts: withoutRec,
+      totalWithReceiptsAmount: withAmount,
+      totalWithoutReceiptsAmount: withoutAmount,
+      receiptComplianceRate: rate
+    };
+  }, [expenses, hasReceipt]);
+
+  // Pre-extracted unique months for the dropdown filter (memoized)
+  const availableExpenseMonths = useMemo(() => {
+    const months = new Set<string>();
+    for (let i = 0; i < expenses.length; i++) {
       try {
-        if (e.date) {
-          const d = new Date(e.date);
-          if (!isNaN(d.getTime())) {
-            monthMatch = d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) === expenseMonthFilter;
-          } else {
-            monthMatch = false; // Invalid date format
-          }
-        } else {
-          monthMatch = false;
+        const d = new Date(expenses[i].date);
+        if (!isNaN(d.getTime())) {
+          months.add(d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }));
         }
       } catch {}
     }
+    return Array.from(months);
+  }, [expenses]);
 
-    let receiptMatch = true;
-    if (expenseReceiptFilter === 'WITH_RECEIPT') {
-      receiptMatch = !!(e.receipt_photo_link || e.receipt_drive_link);
-    } else if (expenseReceiptFilter === 'WITHOUT_RECEIPT') {
-      receiptMatch = !(e.receipt_photo_link || e.receipt_drive_link);
+  // Shared Receipts Detection: link -> array of expenses sharing the exact same receipt
+  const receiptUsageMap = useMemo(() => {
+    const map = new Map<string, Expense[]>();
+    for (let i = 0; i < expenses.length; i++) {
+      const e = expenses[i];
+      const link = (e.receipt_photo_link || e.receipt_drive_link || (e as any).receipt_url || '').trim();
+      if (link && link !== 'null' && link !== 'undefined' && link.length > 5) {
+        let list = map.get(link);
+        if (!list) {
+          list = [];
+          map.set(link, list);
+        }
+        list.push(e);
+      }
     }
+    return map;
+  }, [expenses]);
 
+  const sharedReceiptExpenses = useMemo(() => {
+    return expenses.filter(e => {
+      const link = (e.receipt_photo_link || e.receipt_drive_link || (e as any).receipt_url || '').trim();
+      return Boolean(link && (receiptUsageMap.get(link)?.length || 0) > 1);
+    });
+  }, [expenses, receiptUsageMap]);
+
+  const mismatchExpenses = useMemo(() => {
+    return expenses.filter(e => {
+      const audit = expenseAudits[e.id];
+      if (audit?.status === 'MISMATCH') return true;
+      if (audit?.billAmount && Math.abs(audit.billAmount - e.amount) > 0.01 && audit.status !== 'SPLIT_BILL') return true;
+      return false;
+    });
+  }, [expenses, expenseAudits]);
+
+  const filteredFinanceExpenses = useMemo(() => {
     const query = expenseSearchQuery.trim().toLowerCase();
-    const searchMatch = !query ||
-      (e.created_by_name && e.created_by_name.toLowerCase().includes(query)) ||
-      (e.target_group && e.target_group.toLowerCase().replace(/_/g, ' ').includes(query)) ||
-      (e.title && e.title.toLowerCase().includes(query)) ||
-      (e.category && e.category.toLowerCase().includes(query));
-    return catMatch && monthMatch && searchMatch && receiptMatch;
-  });
+    const hasQuery = Boolean(query);
+    const catFilter = expenseCategoryFilter.toLowerCase();
+    const hasCatFilter = expenseCategoryFilter !== 'ALL';
+    const hasMonthFilter = expenseMonthFilter !== 'ALL';
+    const recFilter = expenseReceiptFilter;
+
+    const result = expenses.filter(e => {
+      if (hasCatFilter && (!e.category || e.category.toLowerCase() !== catFilter)) return false;
+      if (hasMonthFilter) {
+        try {
+          const d = new Date(e.date);
+          if (isNaN(d.getTime()) || d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) !== expenseMonthFilter) {
+            return false;
+          }
+        } catch {
+          return false;
+        }
+      }
+      if (hasQuery) {
+        const titleMatch = e.title && e.title.toLowerCase().includes(query);
+        const nameMatch = (e.created_by_name && e.created_by_name.toLowerCase().includes(query)) ||
+          (e.uploaded_by && e.uploaded_by.toLowerCase().includes(query));
+        const groupMatch = e.target_group && e.target_group.toLowerCase().replace(/_/g, ' ').includes(query);
+        const catMatch = e.category && e.category.toLowerCase().includes(query);
+        if (!titleMatch && !nameMatch && !groupMatch && !catMatch) return false;
+      }
+      if (recFilter === 'WITH_RECEIPT' && !hasReceipt(e)) return false;
+      if (recFilter === 'WITHOUT_RECEIPT' && hasReceipt(e)) return false;
+      return true;
+    });
+
+    return result.sort((a, b) => {
+      const timeA = new Date(a.date).getTime() || 0;
+      const timeB = new Date(b.date).getTime() || 0;
+      return timeB - timeA;
+    });
+  }, [expenses, expenseCategoryFilter, expenseMonthFilter, expenseSearchQuery, expenseReceiptFilter, hasReceipt]);
+
+  const receiptsTabExpenses = useMemo(() => {
+    const query = expenseSearchQuery.trim().toLowerCase();
+    const hasQuery = Boolean(query);
+    const catFilter = expenseCategoryFilter.toLowerCase();
+    const hasCatFilter = expenseCategoryFilter !== 'ALL';
+    const hasMonthFilter = expenseMonthFilter !== 'ALL';
+    const tabFilter = receiptTabStatusFilter;
+
+    const result = expenses.filter(e => {
+      if (hasCatFilter && (!e.category || e.category.toLowerCase() !== catFilter)) return false;
+      if (hasMonthFilter) {
+        try {
+          const d = new Date(e.date);
+          if (isNaN(d.getTime()) || d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) !== expenseMonthFilter) {
+            return false;
+          }
+        } catch {
+          return false;
+        }
+      }
+      if (hasQuery) {
+        const titleMatch = e.title && e.title.toLowerCase().includes(query);
+        const nameMatch = (e.created_by_name && e.created_by_name.toLowerCase().includes(query)) ||
+          (e.uploaded_by && e.uploaded_by.toLowerCase().includes(query));
+        const groupMatch = e.target_group && e.target_group.toLowerCase().replace(/_/g, ' ').includes(query);
+        const catMatch = e.category && e.category.toLowerCase().includes(query);
+        if (!titleMatch && !nameMatch && !groupMatch && !catMatch) return false;
+      }
+
+      if (tabFilter === 'WITH_RECEIPT') return hasReceipt(e);
+      if (tabFilter === 'WITHOUT_RECEIPT') return !hasReceipt(e);
+      if (tabFilter === 'MISMATCH') {
+        const audit = expenseAudits[e.id];
+        return audit?.status === 'MISMATCH' || (audit?.billAmount && Math.abs(audit.billAmount - e.amount) > 0.01 && audit.status !== 'SPLIT_BILL');
+      }
+      if (tabFilter === 'SHARED') {
+        const link = (e.receipt_photo_link || e.receipt_drive_link || (e as any).receipt_url || '').trim();
+        return Boolean(link && (receiptUsageMap.get(link)?.length || 0) > 1);
+      }
+      return true;
+    });
+
+    return result.sort((a, b) => {
+      const timeA = new Date(a.date).getTime() || 0;
+      const timeB = new Date(b.date).getTime() || 0;
+      return timeB - timeA;
+    });
+  }, [expenses, expenseCategoryFilter, expenseMonthFilter, expenseSearchQuery, receiptTabStatusFilter, expenseAudits, receiptUsageMap, hasReceipt]);
+
+  const auditableExpenses = useMemo(() => {
+    return expenses.filter(e => {
+      if (!hasReceipt(e)) return false;
+      if (auditFilter === 'MISMATCH') {
+        const audit = expenseAudits[e.id];
+        return audit?.status === 'MISMATCH' || (audit?.billAmount && Math.abs(audit.billAmount - e.amount) > 0.01 && audit.status !== 'SPLIT_BILL');
+      }
+      if (auditFilter === 'SHARED') {
+        const link = (e.receipt_photo_link || e.receipt_drive_link || (e as any).receipt_url || '').trim();
+        return Boolean(link && (receiptUsageMap.get(link)?.length || 0) > 1);
+      }
+      if (auditFilter === 'UNREVIEWED') {
+        return !expenseAudits[e.id] || expenseAudits[e.id]?.status === 'UNREVIEWED';
+      }
+      return true;
+    });
+  }, [expenses, auditFilter, expenseAudits, receiptUsageMap, hasReceipt]);
+
+  // Reset pagination on filter updates
+  useEffect(() => {
+    setRecordsPage(1);
+  }, [expenseCategoryFilter, expenseMonthFilter, expenseSearchQuery, expenseReceiptFilter]);
+
+  useEffect(() => {
+    setReceiptsPage(1);
+  }, [expenseCategoryFilter, expenseMonthFilter, expenseSearchQuery, receiptTabStatusFilter]);
+
+  // Paginated slices for buttery smooth DOM performance
+  const paginatedFinanceExpenses = useMemo(() => {
+    if (recordsPerPage === -1) return filteredFinanceExpenses;
+    const start = (recordsPage - 1) * recordsPerPage;
+    return filteredFinanceExpenses.slice(start, start + recordsPerPage);
+  }, [filteredFinanceExpenses, recordsPage, recordsPerPage]);
+
+  const totalRecordsPages = useMemo(() => {
+    if (recordsPerPage === -1) return 1;
+    return Math.max(1, Math.ceil(filteredFinanceExpenses.length / recordsPerPage));
+  }, [filteredFinanceExpenses.length, recordsPerPage]);
+
+  const paginatedReceiptsExpenses = useMemo(() => {
+    if (receiptsPerPage === -1) return receiptsTabExpenses;
+    const start = (receiptsPage - 1) * receiptsPerPage;
+    return receiptsTabExpenses.slice(start, start + receiptsPerPage);
+  }, [receiptsTabExpenses, receiptsPage, receiptsPerPage]);
+
+  const totalReceiptsPages = useMemo(() => {
+    if (receiptsPerPage === -1) return 1;
+    return Math.max(1, Math.ceil(receiptsTabExpenses.length / receiptsPerPage));
+  }, [receiptsTabExpenses.length, receiptsPerPage]);
+
+  // Synchronize active audit item input whenever index or open status changes
+  useEffect(() => {
+    if (!isAuditModeOpen) return;
+    const current = auditableExpenses[auditCurrentIndex];
+    if (current) {
+      const audit = expenseAudits[current.id];
+      setAuditBillInput(audit?.billAmount ? String(audit.billAmount) : '');
+      setAuditNoteInput(audit?.note || '');
+      setAuditImageRotation(0);
+      setAuditImageZoom(1);
+    }
+  }, [auditCurrentIndex, isAuditModeOpen, auditFilter]);
+
+  // Keyboard navigation for audit mode: Left/Right arrows
+  useEffect(() => {
+    if (!isAuditModeOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsAuditModeOpen(false);
+      } else if (e.key === 'ArrowRight' && (e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+        setAuditCurrentIndex(prev => Math.min(prev + 1, Math.max(0, auditableExpenses.length - 1)));
+      } else if (e.key === 'ArrowLeft' && (e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+        setAuditCurrentIndex(prev => Math.max(prev - 1, 0));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAuditModeOpen, auditableExpenses.length]);
+
+  // Synchronize modal state whenever selectedExpense opens or changes
+  useEffect(() => {
+    if (selectedExpense) {
+      setIsEditingModalAmount(false);
+      setModalAmountInput(String(selectedExpense.amount));
+      const audit = expenseAudits[selectedExpense.id];
+      setModalReceiptBillInput(audit?.billAmount ? String(audit.billAmount) : '');
+      setModalReconcileNote(audit?.note || '');
+      setShowSharedDetails(false);
+    }
+  }, [selectedExpense?.id]);
 
 
   // Main UI Render helper
@@ -4262,7 +4645,7 @@ function App() {
 
               {/* TOP HERO BANNER & STATS CARD (MATCHING MOBILE SCREENSHOT) */}
               {/* TOP HERO BANNER & STATS CARDS (DYNAMIC EQUAL SIZING) */}
-              <div className={`grid grid-cols-1 sm:grid-cols-2 ${expenseCategoryFilter !== 'ALL' && expenseMonthFilter !== 'ALL' ? 'lg:grid-cols-5' : (expenseCategoryFilter !== 'ALL' || expenseMonthFilter !== 'ALL' ? 'lg:grid-cols-4' : 'lg:grid-cols-3')} gap-4 lg:gap-6`}>
+              <div className={`grid grid-cols-1 sm:grid-cols-2 ${expenseCategoryFilter !== 'ALL' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 lg:gap-6`}>
                 {/* INR Card */}
                 <div className={`relative overflow-hidden rounded-[2rem] p-6 text-white ${themeClasses.bgGradientMain} shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[170px] h-full`}>
                   <div className="absolute -right-20 -top-20 w-48 h-48 bg-white/10 rounded-full blur-2xl mix-blend-overlay"></div>
@@ -4368,42 +4751,13 @@ function App() {
                     </div>
                   </div>
                 )}
-
-                {/* Filtered Month Records */}
-                {expenseMonthFilter !== 'ALL' && (
-                  <div className={`relative overflow-hidden ${themeClasses.bgGradientMain} border border-white/10 rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[170px] h-full text-center group animate-fade-in`}>
-                    <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 pointer-events-none"></div>
-                    <div className="flex flex-col items-center justify-center relative z-10 my-auto">
-                      <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-3 shadow-sm border border-white/20">
-                        <Filter size={24} strokeWidth={2} />
-                      </div>
-                      <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-white/80 mb-1 block truncate max-w-full px-2">{expenseMonthFilter} Records</span>
-                      <strong className="text-4xl xl:text-5xl text-white font-extrabold tracking-tight leading-none">
-                        {expenses.filter(e => {
-                          if (!e.date) return false;
-                          const d = new Date(e.date);
-                          return !isNaN(d.getTime()) && d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) === expenseMonthFilter;
-                        }).length}
-                      </strong>
-                    </div>
-                    
-                    {/* Decorative mini chart */}
-                    <div className="relative z-10 flex items-center justify-end opacity-40 h-[24px]">
-                      <div className="flex gap-1.5 items-end h-6">
-                        {[5, 2, 8, 4, 9, 6].map((h, i) => (
-                          <div key={i} className="w-1.5 bg-white rounded-t-sm animate-pulse" style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}></div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* CONTROLS HEADER: SUB-TABS (All Records | Analytics), CATEGORY FILTERS */}
               <div className="glass-panel rounded-3xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 p-5 space-y-4">
 
                 <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-200/50 dark:border-slate-800/50 pb-4">
-                  {/* Mobile-Style Pill Switcher: All Records vs Analytics */}
+                  {/* Mobile-Style Pill Switcher: All Records vs Receipts vs Analytics */}
                   <div className="bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl flex gap-1 shrink-0">
                     <button
                       onClick={() => setExpenseSubTab('records')}
@@ -4413,6 +4767,21 @@ function App() {
                         }`}
                     >
                       All Records
+                    </button>
+                    <button
+                      onClick={() => setExpenseSubTab('receipts')}
+                      className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${expenseSubTab === 'receipts'
+                        ? 'gradient-btn-tab shadow-md'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900'
+                        }`}
+                    >
+                      <Receipt size={14} />
+                      <span>Receipts</span>
+                      <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        expenseSubTab === 'receipts' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                      }`}>
+                        {totalWithReceipts.length}/{expenses.length}
+                      </span>
                     </button>
                     <button
                       onClick={() => setExpenseSubTab('analytics')}
@@ -4491,22 +4860,46 @@ function App() {
                 {/* SUB-TAB 1: ALL RECORDS (EXPENSES CARDS SORTED REVERSE CHRONOLOGICALLY BY TIME) */}
                 {expenseSubTab === 'records' && (
                   <div className="space-y-4 pt-2">
-                    <div className="flex justify-between items-center px-1">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 px-1">
                       <span className="text-xs font-bold text-slate-500">
                         Showing {filteredFinanceExpenses.length} of {expenses.length} Expense Logs
                         {expenseSearchQuery && <span className="text-slate-800 dark:text-teal-400 font-semibold ml-1.5">(Filtered by "{expenseSearchQuery}")</span>}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-slate-500 hidden sm:inline-block">Receipt:</span>
-                        <select
-                          value={expenseReceiptFilter}
-                          onChange={(e) => setExpenseReceiptFilter(e.target.value as any)}
-                          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 rounded-lg px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                      {/* Receipt Filter Quick Switcher */}
+                      <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-semibold">
+                        <span className="text-[10px] uppercase font-extrabold text-slate-400 px-1.5">Receipt:</span>
+                        <button
+                          onClick={() => setExpenseReceiptFilter('ALL')}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                            expenseReceiptFilter === 'ALL'
+                              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                              : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                          }`}
                         >
-                          <option value="ALL">All ({expenses.length})</option>
-                          <option value="WITH_RECEIPT">With Image ({expenses.filter(e => e.receipt_photo_link || e.receipt_drive_link).length})</option>
-                          <option value="WITHOUT_RECEIPT">Without Image ({expenses.filter(e => !(e.receipt_photo_link || e.receipt_drive_link)).length})</option>
-                        </select>
+                          All ({expenses.length})
+                        </button>
+                        <button
+                          onClick={() => setExpenseReceiptFilter('WITH_RECEIPT')}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                            expenseReceiptFilter === 'WITH_RECEIPT'
+                              ? 'bg-emerald-600 text-white shadow-sm'
+                              : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+                          }`}
+                        >
+                          <CheckCircle2 size={12} />
+                          With Receipt ({totalWithReceipts.length})
+                        </button>
+                        <button
+                          onClick={() => setExpenseReceiptFilter('WITHOUT_RECEIPT')}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                            expenseReceiptFilter === 'WITHOUT_RECEIPT'
+                              ? 'bg-amber-500 text-white shadow-sm'
+                              : 'text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
+                          }`}
+                        >
+                          <AlertCircle size={12} />
+                          Without Receipt ({totalWithoutReceipts.length})
+                        </button>
                       </div>
                     </div>
 
@@ -4524,12 +4917,7 @@ function App() {
                                   className="bg-slate-100/50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-bold text-slate-500 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none"
                                 >
                                   <option value="ALL">All</option>
-                                  {Array.from(new Set(expenses.map(e => {
-                                    try {
-                                      const d = new Date(e.date);
-                                      return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
-                                    } catch { return ''; }
-                                  }).filter(Boolean))).map(m => (
+                                  {availableExpenseMonths.map(m => (
                                     <option key={m} value={m}>{m}</option>
                                   ))}
                                 </select>
@@ -4543,9 +4931,7 @@ function App() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                          {filteredFinanceExpenses
-                            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                            .map(item => {
+                          {paginatedFinanceExpenses.map(item => {
                               // Pick icon based on category
                               const catLower = item.category.toLowerCase();
                               const CategoryIcon =
@@ -4576,19 +4962,8 @@ function App() {
                                   <td className="px-5 py-4">
                                     <div className="flex items-center gap-3.5">
                                       {(item.receipt_photo_link || item.receipt_drive_link) ? (
-                                        <div 
-                                          className="w-10 h-10 rounded-xl shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden bg-slate-50 dark:bg-slate-800 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity relative group/img"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            const url = getDriveImageUrl(item.receipt_photo_link, item.receipt_drive_link);
-                                            if (url) setViewingActivityImages([url]);
-                                          }}
-                                          title="Click to view full receipt"
-                                        >
-                                          <img referrerPolicy="no-referrer" src={getDriveImageUrl(item.receipt_photo_link, item.receipt_drive_link) || "https://placehold.co/40"} alt="Receipt" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span class="text-[8px] font-bold text-slate-400 p-1 text-center leading-tight">Private</span>'; }} />
-                                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
-                                            <Search size={14} className="text-white" />
-                                          </div>
+                                        <div className="w-10 h-10 rounded-xl shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                                          <img loading="lazy" referrerPolicy="no-referrer" src={getDriveImageUrl(item.receipt_photo_link, item.receipt_drive_link) || "https://placehold.co/40"} alt="Receipt" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span class="text-[8px] font-bold text-slate-400 p-1 text-center leading-tight">Private</span>'; }} />
                                         </div>
                                       ) : (
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border shadow-sm ${themeClasses.bgPrimaryLight}/10 ${themeClasses.textPrimaryLight} border-[#062A78]/20`}>
@@ -4668,6 +5043,622 @@ function App() {
                             })}
                         </tbody>
                       </table>
+
+                      {/* PAGINATION BAR FOR ALL RECORDS */}
+                      {filteredFinanceExpenses.length > 0 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/70 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-800 text-xs">
+                          <div className="flex items-center gap-2 text-slate-500 font-semibold">
+                            <span>
+                              Showing {recordsPerPage === -1 ? `1 - ${filteredFinanceExpenses.length}` : `${(recordsPage - 1) * recordsPerPage + 1} - ${Math.min(recordsPage * recordsPerPage, filteredFinanceExpenses.length)}`} of {filteredFinanceExpenses.length} records
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5 text-slate-500">
+                              <span className="text-[11px] font-bold">Rows:</span>
+                              {[25, 50, 100].map(sz => (
+                                <button
+                                  key={sz}
+                                  type="button"
+                                  onClick={() => {
+                                    setRecordsPerPage(sz);
+                                    setRecordsPage(1);
+                                  }}
+                                  className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all ${
+                                    recordsPerPage === sz
+                                      ? 'bg-emerald-600 text-white shadow-sm'
+                                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 border border-slate-200 dark:border-slate-700'
+                                  }`}
+                                >
+                                  {sz}
+                                </button>
+                              ))}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRecordsPerPage(-1);
+                                  setRecordsPage(1);
+                                }}
+                                className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all ${
+                                  recordsPerPage === -1
+                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 border border-slate-200 dark:border-slate-700'
+                                }`}
+                              >
+                                All
+                              </button>
+                            </div>
+
+                            {recordsPerPage !== -1 && totalRecordsPages > 1 && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  disabled={recordsPage <= 1}
+                                  onClick={() => setRecordsPage(prev => Math.max(1, prev - 1))}
+                                  className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition-all"
+                                  title="Previous page"
+                                >
+                                  <ChevronLeft size={14} />
+                                </button>
+                                <span className="px-2 font-mono font-bold text-slate-700 dark:text-slate-300">
+                                  {recordsPage} / {totalRecordsPages}
+                                </span>
+                                <button
+                                  type="button"
+                                  disabled={recordsPage >= totalRecordsPages}
+                                  onClick={() => setRecordsPage(prev => Math.min(totalRecordsPages, prev + 1))}
+                                  className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition-all"
+                                  title="Next page"
+                                >
+                                  <ChevronRight size={14} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* SUB-TAB: RECEIPTS (WITH AND WITHOUT RECEIPTS) */}
+                {expenseSubTab === 'receipts' && (
+                  <div className="space-y-6 pt-2">
+                    {/* RECEIPTS KPI / OVERVIEW CARDS */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                      {/* With Receipts Card */}
+                      <div
+                        onClick={() => setReceiptTabStatusFilter('WITH_RECEIPT')}
+                        className={`cursor-pointer rounded-2xl p-4 border transition-all ${
+                          receiptTabStatusFilter === 'WITH_RECEIPT'
+                            ? 'bg-emerald-500/10 border-emerald-500/40 shadow-lg scale-[1.01]'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                              <FileCheck size={18} />
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 block">With Receipts</span>
+                              <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                                {totalWithReceipts.length}
+                              </h4>
+                            </div>
+                          </div>
+                          <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                            ₹{Math.round(totalWithReceiptsAmount).toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        <div className="mt-2.5 flex items-center justify-between text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                          <span>Verified Attached</span>
+                          <span>{receiptComplianceRate}%</span>
+                        </div>
+                      </div>
+
+                      {/* Without Receipts Card */}
+                      <div
+                        onClick={() => setReceiptTabStatusFilter('WITHOUT_RECEIPT')}
+                        className={`cursor-pointer rounded-2xl p-4 border transition-all ${
+                          receiptTabStatusFilter === 'WITHOUT_RECEIPT'
+                            ? 'bg-amber-500/10 border-amber-500/40 shadow-lg scale-[1.01]'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-amber-500/40 shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                              <FileX size={18} />
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 block">Missing Receipts</span>
+                              <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                                {totalWithoutReceipts.length}
+                              </h4>
+                            </div>
+                          </div>
+                          <span className="text-xs font-black text-amber-600 dark:text-amber-400 font-mono">
+                            ₹{Math.round(totalWithoutReceiptsAmount).toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        <div className="mt-2.5 flex items-center justify-between text-[10px] text-amber-600 dark:text-amber-400 font-semibold pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                          <span>Action Required</span>
+                          <span>{100 - receiptComplianceRate}% missing</span>
+                        </div>
+                      </div>
+
+                      {/* Amount Mismatches Card */}
+                      <div
+                        onClick={() => setReceiptTabStatusFilter('MISMATCH')}
+                        className={`cursor-pointer rounded-2xl p-4 border transition-all ${
+                          receiptTabStatusFilter === 'MISMATCH'
+                            ? 'bg-rose-500/10 border-rose-500/40 shadow-lg scale-[1.01]'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-rose-500/40 shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+                              <AlertTriangle size={18} />
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 block">Amount Mismatches</span>
+                              <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                                {mismatchExpenses.length}
+                              </h4>
+                            </div>
+                          </div>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${mismatchExpenses.length > 0 ? 'bg-rose-100 dark:bg-rose-950 text-rose-600' : 'bg-slate-100 text-slate-500'}`}>
+                            {mismatchExpenses.length > 0 ? 'Diff Found' : 'Clean'}
+                          </span>
+                        </div>
+                        <div className="mt-2.5 flex items-center justify-between text-[10px] text-rose-600 dark:text-rose-400 font-semibold pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                          <span>Bill vs Entry Diff</span>
+                          <span>Click to view</span>
+                        </div>
+                      </div>
+
+                      {/* Shared Receipts Card */}
+                      <div
+                        onClick={() => setReceiptTabStatusFilter('SHARED')}
+                        className={`cursor-pointer rounded-2xl p-4 border transition-all ${
+                          receiptTabStatusFilter === 'SHARED'
+                            ? 'bg-violet-500/10 border-violet-500/40 shadow-lg scale-[1.01]'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-violet-500/40 shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-violet-500/20 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold">
+                              <Link2 size={18} />
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 block">Shared Bills</span>
+                              <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                                {sharedReceiptExpenses.length}
+                              </h4>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-600">
+                            Split Bills
+                          </span>
+                        </div>
+                        <div className="mt-2.5 flex items-center justify-between text-[10px] text-violet-600 dark:text-violet-400 font-semibold pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                          <span>Same Bill Multi-Entry</span>
+                          <span>Click to filter</span>
+                        </div>
+                      </div>
+
+                      {/* Compliance Rate Card */}
+                      <div
+                        onClick={() => setReceiptTabStatusFilter('ALL')}
+                        className={`cursor-pointer rounded-2xl p-4 border transition-all ${
+                          receiptTabStatusFilter === 'ALL'
+                            ? 'bg-teal-500/10 border-teal-500/40 shadow-lg scale-[1.01]'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-teal-500/40 shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+                              <Receipt size={18} />
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 block">Total Entries</span>
+                              <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                                {expenses.length}
+                              </h4>
+                            </div>
+                          </div>
+                          <span className="text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/50 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800/40">
+                            {receiptComplianceRate}% Verified
+                          </span>
+                        </div>
+                        <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden flex">
+                            <div
+                              className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                              style={{ width: `${receiptComplianceRate}%` }}
+                            />
+                            <div
+                              className="bg-amber-500 h-full transition-all duration-500"
+                              style={{ width: `${100 - receiptComplianceRate}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* STATUS FILTER PILLS FOR RECEIPTS TAB & RAPID AUDIT BUTTON */}
+                    <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => setReceiptTabStatusFilter('WITH_RECEIPT')}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            receiptTabStatusFilter === 'WITH_RECEIPT'
+                              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                              : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700'
+                          }`}
+                        >
+                          <FileCheck size={14} />
+                          With Receipts ({totalWithReceipts.length})
+                        </button>
+                        <button
+                          onClick={() => setReceiptTabStatusFilter('WITHOUT_RECEIPT')}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            receiptTabStatusFilter === 'WITHOUT_RECEIPT'
+                              ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
+                              : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700'
+                          }`}
+                        >
+                          <FileX size={14} />
+                          Without Receipts ({totalWithoutReceipts.length})
+                        </button>
+                        <button
+                          onClick={() => setReceiptTabStatusFilter('MISMATCH')}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            receiptTabStatusFilter === 'MISMATCH'
+                              ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20'
+                              : 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40'
+                          }`}
+                        >
+                          <AlertTriangle size={14} />
+                          Mismatches ({mismatchExpenses.length})
+                        </button>
+                        <button
+                          onClick={() => setReceiptTabStatusFilter('SHARED')}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            receiptTabStatusFilter === 'SHARED'
+                              ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20'
+                              : 'bg-white dark:bg-slate-900 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 border border-violet-200 dark:border-violet-900/40'
+                          }`}
+                        >
+                          <Link2 size={14} />
+                          Shared Bills ({sharedReceiptExpenses.length})
+                        </button>
+                        <button
+                          onClick={() => setReceiptTabStatusFilter('ALL')}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            receiptTabStatusFilter === 'ALL'
+                              ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'
+                              : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700'
+                          }`}
+                        >
+                          <Receipt size={14} />
+                          All ({expenses.length})
+                        </button>
+                      </div>
+
+                      {/* Launch Rapid Audit Mode Button */}
+                      <div className="flex items-center gap-2.5 w-full lg:w-auto justify-between lg:justify-end">
+                        <button
+                          onClick={() => {
+                            setAuditCurrentIndex(0);
+                            setIsAuditModeOpen(true);
+                          }}
+                          className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md shadow-indigo-500/25 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
+                          title="Open Side-by-Side Rapid Receipt Reconciliation Mode"
+                        >
+                          <Zap size={15} />
+                          <span>⚡ Rapid Audit Mode</span>
+                          <span className="bg-white/20 text-[10px] px-1.5 py-0.5 rounded-md font-mono">
+                            Review Receipts
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* TABLE OF RECEIPTS */}
+                    <div className="overflow-x-auto w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
+                      <table className="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                          <tr className="border-b border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/50">
+                            <th className="px-5 py-4 font-semibold">Expense Title</th>
+                            <th className="px-5 py-4 font-semibold">Receipt Status & Verification</th>
+                            <th className="px-5 py-4 font-semibold">Date</th>
+                            <th className="px-5 py-4 font-semibold">Category</th>
+                            <th className="px-5 py-4 font-semibold">Submitted By</th>
+                            <th className="px-5 py-4 font-semibold text-right">Amount</th>
+                            <th className="px-5 py-4 font-semibold text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                          {receiptsTabExpenses.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="px-5 py-12 text-center text-slate-400">
+                                <Receipt size={36} className="mx-auto mb-2 opacity-40" />
+                                <p className="font-bold text-sm">No expenses found matching the current filter</p>
+                              </td>
+                            </tr>
+                          ) : (
+                            paginatedReceiptsExpenses.map(item => {
+                              const isReceiptAttached = hasReceipt(item);
+                                const receiptImgUrl = getDriveImageUrl(item.receipt_photo_link, item.receipt_drive_link);
+                                const link = (item.receipt_photo_link || item.receipt_drive_link || (item as any).receipt_url || '').trim();
+                                const shared = link ? (receiptUsageMap.get(link) || []) : [];
+                                const isShared = shared.length > 1;
+                                const sharedTotal = shared.reduce((sum, s) => sum + s.amount, 0);
+                                const audit = expenseAudits[item.id];
+                                const hasMismatch = audit?.status === 'MISMATCH' || (audit?.billAmount && Math.abs(audit.billAmount - item.amount) > 0.01 && audit.status !== 'SPLIT_BILL');
+                                let formattedDate = item.date;
+                                try {
+                                  const d = new Date(item.date);
+                                  if (!isNaN(d.getTime())) {
+                                    formattedDate = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                                  }
+                                } catch {}
+
+                                return (
+                                  <tr
+                                    key={item.id}
+                                    onClick={() => setSelectedExpense(item)}
+                                    className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer animate-fade-in"
+                                  >
+                                    <td className="px-5 py-4">
+                                      <div className="flex flex-col gap-1">
+                                        <span className="font-bold text-[14px] text-slate-900 dark:text-white leading-tight group-hover:text-[#062A78] dark:group-hover:text-blue-400 transition-colors">
+                                          {item.title}
+                                        </span>
+                                        <div className="flex gap-2 items-center text-[10px] text-slate-400">
+                                          <span>ID: {item.id}</span>
+                                          {item.target_group && (
+                                            <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 font-semibold">
+                                              For: {item.target_group}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                                      {isReceiptAttached ? (
+                                        <div className="flex items-center gap-3">
+                                          {receiptImgUrl ? (
+                                            <div
+                                              onClick={() => setViewingReceiptModalUrl(receiptImgUrl)}
+                                              className="w-12 h-12 rounded-xl shrink-0 border border-emerald-200 dark:border-emerald-800/50 shadow-sm overflow-hidden bg-slate-50 dark:bg-slate-800 flex items-center justify-center cursor-zoom-in hover:scale-105 transition-transform group/thumb relative"
+                                              title="Click to preview receipt"
+                                            >
+                                              <img
+                                                loading="lazy"
+                                                referrerPolicy="no-referrer"
+                                                src={receiptImgUrl}
+                                                alt="Receipt"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                  e.currentTarget.style.display = 'none';
+                                                  e.currentTarget.parentElement!.innerHTML = '<span class="text-[8px] font-bold text-slate-400 p-1 text-center leading-tight">Private</span>';
+                                                }}
+                                              />
+                                              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                                <Eye size={14} />
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200 dark:border-emerald-800/50">
+                                              <FileCheck size={18} />
+                                            </div>
+                                          )}
+                                          <div className="flex flex-col gap-1">
+                                            <div className="flex flex-wrap items-center gap-1.5">
+                                              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/50">
+                                                <CheckCircle2 size={10} />
+                                                With Receipt
+                                              </span>
+                                              {hasMismatch && (
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-900/50">
+                                                  <AlertTriangle size={10} />
+                                                  Diff: ₹{audit?.billAmount ? Math.abs(audit.billAmount - item.amount) : 'Mismatch'}
+                                                </span>
+                                              )}
+                                              {isShared && (
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/50 px-2 py-0.5 rounded-full border border-violet-200 dark:border-violet-900/50" title={`Same bill shared across ${shared.length} entries totaling ₹${sharedTotal}`}>
+                                                  <Link2 size={10} />
+                                                  Shared ({shared.length} entries: ₹{sharedTotal})
+                                                </span>
+                                              )}
+                                            </div>
+
+                                            {hasMismatch && audit?.billAmount && (
+                                              <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-[10px] text-slate-500 font-semibold">
+                                                  Bill: <strong className="text-slate-800 dark:text-slate-200">₹{audit.billAmount}</strong> (Entry: ₹{item.amount})
+                                                </span>
+                                                <button
+                                                  onClick={() => handleUpdateExpenseAmount(item.id, audit.billAmount!)}
+                                                  className="text-[10px] font-bold text-rose-600 dark:text-rose-400 hover:underline bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/30"
+                                                  title={`Fix expense amount to match the bill: ₹${audit.billAmount}`}
+                                                >
+                                                  Fix to ₹{audit.billAmount}
+                                                </button>
+                                              </div>
+                                            )}
+
+                                            {item.receipt_drive_link && (
+                                              <a
+                                                href={item.receipt_drive_link}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 font-semibold"
+                                              >
+                                                Drive Link <ExternalLink size={9} />
+                                              </a>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-2">
+                                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/50">
+                                            <AlertCircle size={10} />
+                                            Without Receipt
+                                          </span>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setUploadingReceiptExpenseId(item.id);
+                                              receiptFileInputRef.current?.click();
+                                            }}
+                                            className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-sm transition-all hover:scale-105 active:scale-95"
+                                            title="Upload and attach bill"
+                                          >
+                                            <Upload size={10} />
+                                            Attach Bill
+                                          </button>
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="px-5 py-4">
+                                      <span className="text-[12px] text-slate-600 dark:text-slate-300 font-medium whitespace-nowrap">
+                                        🗓 {formattedDate}
+                                      </span>
+                                    </td>
+                                    <td className="px-5 py-4">
+                                      <span className="text-[10px] font-bold uppercase px-2.5 py-1 rounded-[6px] bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 tracking-wider">
+                                        {item.category}
+                                      </span>
+                                    </td>
+                                    <td className="px-5 py-4">
+                                      <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold block">
+                                        {item.uploaded_by || item.created_by_name || 'Admin'}
+                                      </span>
+                                    </td>
+                                    <td className="px-5 py-4 text-right">
+                                      <span className="text-[15px] font-black text-emerald-600 dark:text-emerald-400 font-mono whitespace-nowrap">
+                                        ₹ {item.amount.toLocaleString('en-IN')}
+                                      </span>
+                                    </td>
+                                    <td className="px-5 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                                      <div className="flex items-center justify-end gap-1.5">
+                                        {isReceiptAttached && (
+                                          <button
+                                            onClick={() => {
+                                              const idx = auditableExpenses.findIndex(ae => ae.id === item.id);
+                                              setAuditCurrentIndex(idx >= 0 ? idx : 0);
+                                              setIsAuditModeOpen(true);
+                                            }}
+                                            className="px-2.5 py-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800/50 rounded-lg flex items-center gap-1 transition-all hover:scale-105"
+                                            title="Reconcile receipt and amount side-by-side"
+                                          >
+                                            <Zap size={12} />
+                                            <span>Audit</span>
+                                          </button>
+                                        )}
+                                        <button
+                                          onClick={() => setSelectedExpense(item)}
+                                          className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                          title="View full expense details"
+                                        >
+                                          <Eye size={15} />
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteExpense(item.id)}
+                                          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors"
+                                          title="Delete expense"
+                                        >
+                                          <Trash2 size={15} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })
+                          )}
+                        </tbody>
+                      </table>
+
+                      {/* PAGINATION BAR FOR RECEIPTS */}
+                      {receiptsTabExpenses.length > 0 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/70 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-800 text-xs">
+                          <div className="flex items-center gap-2 text-slate-500 font-semibold">
+                            <span>
+                              Showing {receiptsPerPage === -1 ? `1 - ${receiptsTabExpenses.length}` : `${(receiptsPage - 1) * receiptsPerPage + 1} - ${Math.min(receiptsPage * receiptsPerPage, receiptsTabExpenses.length)}`} of {receiptsTabExpenses.length} receipts
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5 text-slate-500">
+                              <span className="text-[11px] font-bold">Rows:</span>
+                              {[25, 50, 100].map(sz => (
+                                <button
+                                  key={sz}
+                                  type="button"
+                                  onClick={() => {
+                                    setReceiptsPerPage(sz);
+                                    setReceiptsPage(1);
+                                  }}
+                                  className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all ${
+                                    receiptsPerPage === sz
+                                      ? 'bg-emerald-600 text-white shadow-sm'
+                                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 border border-slate-200 dark:border-slate-700'
+                                  }`}
+                                >
+                                  {sz}
+                                </button>
+                              ))}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setReceiptsPerPage(-1);
+                                  setReceiptsPage(1);
+                                }}
+                                className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all ${
+                                  receiptsPerPage === -1
+                                    ? 'bg-emerald-600 text-white shadow-sm'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 border border-slate-200 dark:border-slate-700'
+                                }`}
+                              >
+                                All
+                              </button>
+                            </div>
+
+                            {receiptsPerPage !== -1 && totalReceiptsPages > 1 && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  disabled={receiptsPage <= 1}
+                                  onClick={() => setReceiptsPage(prev => Math.max(1, prev - 1))}
+                                  className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition-all"
+                                  title="Previous page"
+                                >
+                                  <ChevronLeft size={14} />
+                                </button>
+                                <span className="px-2 font-mono font-bold text-slate-700 dark:text-slate-300">
+                                  {receiptsPage} / {totalReceiptsPages}
+                                </span>
+                                <button
+                                  type="button"
+                                  disabled={receiptsPage >= totalReceiptsPages}
+                                  onClick={() => setReceiptsPage(prev => Math.min(totalReceiptsPages, prev + 1))}
+                                  className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition-all"
+                                  title="Next page"
+                                >
+                                  <ChevronRight size={14} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -4707,13 +5698,17 @@ function App() {
                         return found ? found.amount : 0;
                       });
                     } else {
-                      monthlyCosts = monthIndices.map(monthIdx => {
-                        return expenses.filter(e => {
-                          if (!e.date) return false;
-                          const d = new Date(e.date);
-                          return d.getMonth() === monthIdx && d.getFullYear() === currentYear;
-                        }).reduce((sum, e) => sum + e.amount, 0);
-                      });
+                      const costs = new Array(12).fill(0);
+                      for (let j = 0; j < expenses.length; j++) {
+                        const exp = expenses[j];
+                        if (exp.date) {
+                          const d = new Date(exp.date);
+                          if (!isNaN(d.getTime()) && d.getFullYear() === currentYear) {
+                            costs[d.getMonth()] += (exp.amount || 0);
+                          }
+                        }
+                      }
+                      monthlyCosts = costs;
                     }
 
                     const maxChartValue = 100000;
@@ -5936,149 +6931,939 @@ function App() {
         </div>
       )}
 
-      {/* EXPENSE DETAIL / APPROVAL MODAL */}
-      {selectedExpense && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[85vh]">
-            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
-                  <Receipt size={16} />
-                </div>
-                <h4 className="font-extrabold text-base text-slate-900 dark:text-white">Expense Details</h4>
-              </div>
-              <button onClick={() => setSelectedExpense(null)} className="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-slate-900 rounded-full">
-                <X size={18} />
-              </button>
-            </div>
+      {/* EXPENSE DETAIL / APPROVAL & RECONCILIATION MODAL */}
+      {selectedExpense && (() => {
+        const modalReceiptLink = (selectedExpense.receipt_photo_link || selectedExpense.receipt_drive_link || (selectedExpense as any).receipt_url || '').trim();
+        const sharedEntries = modalReceiptLink && modalReceiptLink !== 'null' && modalReceiptLink !== 'undefined'
+          ? (receiptUsageMap.get(modalReceiptLink) || [])
+          : [];
+        const isSharedReceipt = sharedEntries.length > 1;
+        const sharedCombinedTotal = sharedEntries.reduce((sum, e) => sum + (e.amount || 0), 0);
+        const audit = expenseAudits[selectedExpense.id];
+        const parsedReceiptBill = parseFloat(modalReceiptBillInput);
+        const hasReceiptBillEntered = !isNaN(parsedReceiptBill) && parsedReceiptBill > 0;
+        const isAmountMismatch = hasReceiptBillEntered && Math.abs(parsedReceiptBill - selectedExpense.amount) > 0.01 && audit?.status !== 'SPLIT_BILL';
+        const isExactMatch = hasReceiptBillEntered && Math.abs(parsedReceiptBill - selectedExpense.amount) <= 0.01;
 
-            <div className="flex-1 overflow-y-auto space-y-4 text-xs pr-1 scrollbar-none">
-              <div className="text-center py-4 bg-slate-50 dark:bg-slate-950/50 rounded-2xl border border-slate-100 dark:border-slate-800/40">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">TOTAL AMOUNT</span>
-                <span className="text-3xl font-black text-emerald-600 dark:text-purple-400 font-mono">
-                  ₹ {selectedExpense.amount.toLocaleString('en-IN')}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-100 dark:border-slate-800/60 pb-3">
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block">Title / Description</span>
-                  <span className="font-extrabold text-sm text-white mt-0.5 block">{selectedExpense.title}</span>
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[92vh]">
+              {/* MODAL HEADER */}
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-3 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                    <Receipt size={16} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-extrabold text-base text-slate-900 dark:text-white">Expense Details</h4>
+                      {audit?.status === 'VERIFIED_MATCH' && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 flex items-center gap-1">
+                          <CheckCircle2 size={11} /> Verified
+                        </span>
+                      )}
+                      {audit?.status === 'SPLIT_BILL' && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400 flex items-center gap-1">
+                          <Layers size={11} /> Split Bill
+                        </span>
+                      )}
+                      {isAmountMismatch && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400 flex items-center gap-1">
+                          <AlertTriangle size={11} /> Mismatch
+                        </span>
+                      )}
+                      {isSharedReceipt && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 flex items-center gap-1">
+                          <Link2 size={11} /> Shared ({sharedEntries.length})
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block">Category</span>
-                  <span className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5 block uppercase">{selectedExpense.category}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-100 dark:border-slate-800/60 pb-3">
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block">Date Submitted</span>
-                  <span className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5 block">
-                    {new Date(selectedExpense.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block">For Scholar Group</span>
-                  <span className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5 block font-mono">
-                    {selectedExpense.target_group || 'ALL'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-100 dark:border-slate-800/60 pb-3">
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block">Refund Requested</span>
-                  <span className={`inline-block font-extrabold text-[10px] mt-0.5 px-2 py-0.5 rounded-full ${selectedExpense.refund_requested ? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400' : 'bg-slate-100 text-slate-500'}`}>
-                    {selectedExpense.refund_requested ? 'YES' : 'NO'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block">Foundation Paid</span>
-                  <span className={`inline-block font-extrabold text-[10px] mt-0.5 px-2 py-0.5 rounded-full ${selectedExpense.is_foundation_paid ? 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-400' : 'bg-slate-100 text-slate-500'}`}>
-                    {selectedExpense.is_foundation_paid ? 'YES' : 'NO'}
-                  </span>
-                </div>
+                <button onClick={() => setSelectedExpense(null)} className="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 rounded-full">
+                  <X size={18} />
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-100 dark:border-slate-800/60 pb-3">
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block">Submitted By</span>
-                  <span className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5 block">{selectedExpense.uploaded_by || selectedExpense.created_by_name || 'System Admin'}</span>
-                </div>
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block">Status</span>
-                  <span className={`inline-block font-extrabold text-[10px] mt-0.5 px-2 py-0.5 rounded-full ${selectedExpense.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' :
-                    selectedExpense.status === 'REJECTED' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400' :
-                      'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400'
-                    }`}>
-                    {selectedExpense.status}
-                  </span>
-                </div>
-              </div>
-
-              {selectedExpense.status === 'APPROVED' && (
-                <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-250/20 rounded-2xl p-3 flex justify-between items-center">
-                  <span className="text-slate-500 font-semibold">Approved By:</span>
-                  <strong className="text-emerald-600 dark:text-emerald-400">{selectedExpense.approved_by_name || 'System Admin'}</strong>
-                </div>
-              )}
-
-              {(selectedExpense.receipt_photo_link || selectedExpense.receipt_drive_link) && (
-                <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/60 pb-1">
-                  <span className="text-[9px] text-slate-400 font-bold uppercase block">Receipt Attachment</span>
-                  <div className="relative rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-2">
-                    {getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link) ? (
-                      <img
-                        referrerPolicy="no-referrer"
-                        src={getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link) || "https://placehold.co/400"}
-                        alt="Expense Receipt"
-                        className="w-full max-h-48 object-contain hover:scale-[1.03] transition-transform cursor-zoom-in rounded-xl"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<a href="' + (selectedExpense.receipt_drive_link || selectedExpense.receipt_photo_link) + '" target="_blank" class="block w-full py-4 text-center border-2 border-dashed border-red-200 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50">Private Google Drive Image. Click to view externally.</a>'; }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const url = getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link);
-                          if (url) setViewingActivityImages([url]);
+              {/* MODAL BODY */}
+              <div className="flex-1 overflow-y-auto space-y-4 text-xs pr-1 scrollbar-none">
+                {/* AMOUNT CARD (WITH INLINE EDIT & QUICK FIX) */}
+                {!isEditingModalAmount ? (
+                  <div className="relative py-3.5 px-4 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-200/80 dark:border-slate-800/60 flex flex-col items-center justify-center">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">RECORDED AMOUNT</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-3xl font-black text-emerald-600 dark:text-teal-400 font-mono">
+                        ₹ {selectedExpense.amount.toLocaleString('en-IN')}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setModalAmountInput(String(selectedExpense.amount));
+                          setIsEditingModalAmount(true);
                         }}
-                      />
-                    ) : (
-                      <a href={selectedExpense.receipt_drive_link!} target="_blank" rel="noopener noreferrer" className="block w-full py-4 text-center border-2 border-dashed border-purple-200 dark:border-purple-900/50 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20">
-                        <span className="text-xs font-bold text-purple-600 dark:text-purple-400">View Document in Google Drive</span>
-                      </a>
+                        title="Edit recorded amount"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                    </div>
+
+                    {isAmountMismatch && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                          Receipt shows ₹{parsedReceiptBill.toLocaleString('en-IN')}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleUpdateExpenseAmount(selectedExpense.id, parsedReceiptBill, `Corrected to match receipt bill ₹${parsedReceiptBill}`);
+                            handleSaveAuditRecord(selectedExpense.id, 'VERIFIED_MATCH', parsedReceiptBill, `Corrected to match receipt bill`);
+                          }}
+                          className="px-2 py-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold shadow-sm flex items-center gap-1 transition-all"
+                        >
+                          <Zap size={11} /> Fix to ₹{parsedReceiptBill.toLocaleString('en-IN')}
+                        </button>
+                      </div>
                     )}
+
+                    {selectedExpense.notes && (
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 italic mt-1.5 max-w-[95%] text-center">
+                        Note: {selectedExpense.notes}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div className="py-3 px-4 bg-teal-50/70 dark:bg-teal-950/30 rounded-2xl border border-teal-300 dark:border-teal-800 space-y-2">
+                    <span className="text-[10px] text-teal-700 dark:text-teal-300 font-bold uppercase tracking-wider block">
+                      Edit Recorded Amount
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-black text-slate-400">₹</span>
+                      <input
+                        type="number"
+                        autoFocus
+                        value={modalAmountInput}
+                        onChange={(e) => setModalAmountInput(e.target.value)}
+                        placeholder="Amount in ₹"
+                        className="flex-1 px-3 py-1.5 rounded-xl border border-teal-400 dark:border-teal-700 bg-white dark:bg-slate-900 font-mono text-sm font-black text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const val = parseFloat(modalAmountInput);
+                          if (!isNaN(val) && val >= 0) {
+                            handleUpdateExpenseAmount(selectedExpense.id, val, modalReconcileNote || 'Admin manual update');
+                            setIsEditingModalAmount(false);
+                          } else {
+                            toast.error('Enter a valid amount');
+                          }
+                        }}
+                        className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingModalAmount(false)}
+                        className="px-2.5 py-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-xs font-bold"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* DETAILS GRID */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 border-b border-slate-100 dark:border-slate-800/60 pb-3">
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">Title / Description</span>
+                    <span className="font-extrabold text-xs text-slate-800 dark:text-white mt-0.5 block">
+                      {selectedExpense.title || <span className="text-slate-400 font-normal italic">(No title provided)</span>}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">Category</span>
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5 block uppercase">{selectedExpense.category}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 border-b border-slate-100 dark:border-slate-800/60 pb-3">
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">Date Submitted</span>
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5 block">
+                      {new Date(selectedExpense.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">For Scholar Group</span>
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5 block font-mono">
+                      {selectedExpense.target_group || 'ALL'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 border-b border-slate-100 dark:border-slate-800/60 pb-3">
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">Refund Requested</span>
+                    <span className={`inline-block font-extrabold text-[10px] mt-0.5 px-2 py-0.5 rounded-full ${selectedExpense.refund_requested ? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400' : 'bg-slate-100 text-slate-500'}`}>
+                      {selectedExpense.refund_requested ? 'YES' : 'NO'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">Foundation Paid</span>
+                    <span className={`inline-block font-extrabold text-[10px] mt-0.5 px-2 py-0.5 rounded-full ${selectedExpense.is_foundation_paid ? 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-400' : 'bg-slate-100 text-slate-500'}`}>
+                      {selectedExpense.is_foundation_paid ? 'YES' : 'NO'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 border-b border-slate-100 dark:border-slate-800/60 pb-3">
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">Submitted By</span>
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5 block">{selectedExpense.uploaded_by || selectedExpense.created_by_name || 'System Admin'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">Status</span>
+                    <span className={`inline-block font-extrabold text-[10px] mt-0.5 px-2 py-0.5 rounded-full ${selectedExpense.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' :
+                      selectedExpense.status === 'REJECTED' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400' :
+                        'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400'
+                      }`}>
+                      {selectedExpense.status}
+                    </span>
+                  </div>
+                </div>
+
+                {selectedExpense.status === 'APPROVED' && (
+                  <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-250/20 rounded-2xl p-3 flex justify-between items-center">
+                    <span className="text-slate-500 font-semibold">Approved By:</span>
+                    <strong className="text-emerald-600 dark:text-emerald-400">{selectedExpense.approved_by_name || 'System Admin'}</strong>
+                  </div>
+                )}
+
+                {/* RECEIPT ATTACHMENT & RECONCILIATION */}
+                {hasReceipt(selectedExpense) ? (
+                  <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Receipt Attachment</span>
+                      <div className="flex items-center gap-1.5">
+                        {modalReceiptLink && (
+                          <button
+                            type="button"
+                            onClick={() => setViewingReceiptModalUrl(getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link) || modalReceiptLink)}
+                            className="text-[10px] font-bold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1"
+                          >
+                            <Eye size={12} /> Full Screen
+                          </button>
+                        )}
+                        {selectedExpense.receipt_drive_link && (
+                          <a
+                            href={selectedExpense.receipt_drive_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-0.5 ml-2"
+                          >
+                            <ExternalLink size={11} /> Drive
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* RECEIPT IMAGE PREVIEW */}
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-slate-900/5 dark:bg-slate-950/40 p-2 flex items-center justify-center">
+                      {getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link) ? (
+                        <img
+                          referrerPolicy="no-referrer"
+                          src={getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link) || "https://placehold.co/400"}
+                          alt="Expense Receipt"
+                          className="w-full max-h-52 object-contain hover:scale-[1.02] transition-transform cursor-zoom-in rounded-xl"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<a href="' + (selectedExpense.receipt_drive_link || selectedExpense.receipt_photo_link) + '" target="_blank" class="block w-full py-4 text-center border-2 border-dashed border-red-200 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50">Private Google Drive Image. Click to view externally.</a>'; }}
+                          onClick={() => setViewingReceiptModalUrl(getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link) || modalReceiptLink)}
+                        />
+                      ) : (
+                        <a href={selectedExpense.receipt_drive_link!} target="_blank" rel="noopener noreferrer" className="block w-full py-4 text-center border-2 border-dashed border-purple-200 dark:border-purple-900/50 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20">
+                          <span className="text-xs font-bold text-purple-600 dark:text-purple-400">View Document in Google Drive</span>
+                        </a>
+                      )}
+                    </div>
+
+                    {/* RECEIPT AMOUNT AUDIT & RECONCILIATION PANEL */}
+                    <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-3 border border-slate-200 dark:border-slate-800/80 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                          <Zap size={12} className="text-teal-500" /> Receipt Reconciliation
+                        </span>
+                        <span className="text-[10px] text-slate-400">Compare bill with recorded amount</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">Bill on Receipt:</span>
+                        <div className="relative flex-1">
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                          <input
+                            type="number"
+                            value={modalReceiptBillInput}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setModalReceiptBillInput(val);
+                              const parsed = parseFloat(val);
+                              if (!isNaN(parsed) && parsed > 0) {
+                                if (Math.abs(parsed - selectedExpense.amount) <= 0.01) {
+                                  handleSaveAuditRecord(selectedExpense.id, 'VERIFIED_MATCH', parsed);
+                                } else {
+                                  handleSaveAuditRecord(selectedExpense.id, 'MISMATCH', parsed);
+                                }
+                              }
+                            }}
+                            placeholder="Enter amount visible on bill (e.g. 2000)"
+                            className="w-full pl-6 pr-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* COMPARISON RESULT & QUICK FIX BUTTONS */}
+                      {hasReceiptBillEntered && (
+                        <div>
+                          {isExactMatch ? (
+                            <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between text-xs">
+                              <span className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                                <CheckCircle2 size={14} /> Receipt matches recorded amount perfectly (₹{selectedExpense.amount.toLocaleString('en-IN')})
+                              </span>
+                              <span className="text-[10px] uppercase font-extrabold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full">
+                                Verified
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-2">
+                              <div className="flex items-start gap-2">
+                                <AlertTriangle size={15} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                                <div>
+                                  <div className="font-extrabold text-amber-800 dark:text-amber-300 text-xs">
+                                    Discrepancy: Receipt shows ₹{parsedReceiptBill.toLocaleString('en-IN')} vs Recorded ₹{selectedExpense.amount.toLocaleString('en-IN')}
+                                  </div>
+                                  <div className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
+                                    Difference: {parsedReceiptBill > selectedExpense.amount
+                                      ? `+₹${(parsedReceiptBill - selectedExpense.amount).toLocaleString('en-IN')} higher on receipt`
+                                      : `-₹${(selectedExpense.amount - parsedReceiptBill).toLocaleString('en-IN')} lower on receipt`}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-amber-200/70 dark:border-amber-800/50">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleUpdateExpenseAmount(selectedExpense.id, parsedReceiptBill, `Corrected to match receipt bill ₹${parsedReceiptBill}`);
+                                    handleSaveAuditRecord(selectedExpense.id, 'VERIFIED_MATCH', parsedReceiptBill, `Corrected recorded amount to match receipt`);
+                                  }}
+                                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition-all"
+                                >
+                                  <Zap size={12} /> Fix to ₹{parsedReceiptBill.toLocaleString('en-IN')}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleSaveAuditRecord(selectedExpense.id, 'SPLIT_BILL', parsedReceiptBill, `Partial claim of ₹${selectedExpense.amount} out of ₹${parsedReceiptBill} receipt`);
+                                  }}
+                                  className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition-all"
+                                >
+                                  <Layers size={12} /> Mark as Split / Partial Bill
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* SHARED RECEIPT ACCORDION */}
+                      {isSharedReceipt && (
+                        <div className="p-2.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-800/60 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-indigo-900 dark:text-indigo-200 font-bold text-xs">
+                              <Link2 size={14} className="text-indigo-600 dark:text-indigo-400" />
+                              <span>Shared Bill: Attached to {sharedEntries.length} expenses</span>
+                            </div>
+                            <span className="text-[11px] font-black text-indigo-700 dark:text-indigo-300 font-mono">
+                              Combined: ₹{sharedCombinedTotal.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-indigo-600 dark:text-indigo-400">
+                            Multiple expenses share this receipt (e.g. split bill across items or volunteers).
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setShowSharedDetails(!showSharedDetails)}
+                            className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 underline hover:no-underline"
+                          >
+                            {showSharedDetails ? '▲ Hide breakdown' : '▼ View all entries sharing this receipt'}
+                          </button>
+
+                          {showSharedDetails && (
+                            <div className="space-y-1 pt-1.5 border-t border-indigo-200/60 dark:border-indigo-800/60">
+                              {sharedEntries.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className={`flex items-center justify-between p-1.5 rounded-lg text-[11px] ${
+                                    item.id === selectedExpense.id
+                                      ? 'bg-indigo-100 dark:bg-indigo-900/60 font-bold text-indigo-900 dark:text-indigo-100'
+                                      : 'bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300'
+                                  }`}
+                                >
+                                  <div>
+                                    <span>{item.uploaded_by || item.created_by_name || 'Volunteer'}</span>
+                                    <span className="text-slate-400 mx-1">•</span>
+                                    <span className="uppercase text-[10px]">{item.category}</span>
+                                    {item.id === selectedExpense.id && <span className="ml-1 text-[10px] text-indigo-600 dark:text-indigo-400">(This Entry)</span>}
+                                  </div>
+                                  <span className="font-mono font-bold">₹{item.amount.toLocaleString('en-IN')}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* NO RECEIPT ATTACHED YET */
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-dashed border-slate-300 dark:border-slate-800 text-center space-y-2">
+                      <FileX size={24} className="mx-auto text-slate-400" />
+                      <span className="text-xs font-semibold text-slate-500 block">No receipt attached for this expense</span>
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-sm">
+                        <Upload size={13} />
+                        <span>Upload & Attach Receipt</span>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUploadReceiptForExpense(selectedExpense.id, file);
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* SUPER ADMIN APPROVAL/DISAPPROVAL CONTROLS */}
+              {activeRole === 'Admin' && (
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 mt-3 shrink-0 space-y-2">
+                  {isAmountMismatch && (
+                    <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[10px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                      <AlertTriangle size={13} className="shrink-0" />
+                      <span>Note: Receipt bill (₹{parsedReceiptBill.toLocaleString('en-IN')}) differs from recorded amount (₹{selectedExpense.amount.toLocaleString('en-IN')}). You can fix it above before approving.</span>
+                    </div>
+                  )}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => handleApproveExpense(selectedExpense.id, false)}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border ${selectedExpense.status === 'REJECTED'
+                        ? 'bg-rose-100 dark:bg-rose-950/30 text-rose-700 border-rose-200 dark:border-rose-900 cursor-not-allowed'
+                        : 'bg-white hover:bg-rose-50 text-rose-600 border-rose-200 dark:border-rose-800 dark:bg-slate-900 dark:hover:bg-rose-950/20'
+                        }`}
+                      disabled={selectedExpense.status === 'REJECTED'}
+                    >
+                      Reject / Disapprove
+                    </button>
+                    <button
+                      onClick={() => handleApproveExpense(selectedExpense.id, true)}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border ${selectedExpense.status === 'APPROVED'
+                        ? 'bg-emerald-150 dark:bg-emerald-950/30 text-emerald-700 border-emerald-250/30 cursor-not-allowed'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-slate-900 border-transparent shadow-lg shadow-emerald-600/25'
+                        }`}
+                      disabled={selectedExpense.status === 'APPROVED'}
+                    >
+                      Approve Expense
+                    </button>
                   </div>
                 </div>
               )}
             </div>
+          </div>
+        );
+      })()}
 
-            {/* SUPER ADMIN APPROVAL/DISAPPROVAL CONTROLS */}
-            {activeRole === 'Admin' && (
-              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 mt-4 shrink-0">
-                <button
-                  onClick={() => handleApproveExpense(selectedExpense.id, false)}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border ${selectedExpense.status === 'REJECTED'
-                    ? 'bg-rose-100 dark:bg-rose-950/30 text-rose-700 border-rose-200 dark:border-rose-900 cursor-not-allowed'
-                    : 'bg-white hover:bg-rose-50 text-rose-600 border-rose-200 dark:border-rose-800 dark:bg-slate-900 dark:hover:bg-rose-950/20'
-                    }`}
-                  disabled={selectedExpense.status === 'REJECTED'}
+      {/* FULL RESOLUTION RECEIPT MODAL */}
+      {viewingReceiptModalUrl && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+          onClick={() => setViewingReceiptModalUrl(null)}
+        >
+          <div 
+            className="relative max-w-3xl w-full bg-slate-900 rounded-3xl p-5 overflow-hidden border border-white/10 shadow-2xl flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-full flex justify-between items-center pb-3 border-b border-white/10 mb-4">
+              <span className="text-white text-sm font-bold flex items-center gap-2">
+                <Receipt size={18} className="text-emerald-400" /> Receipt Preview
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href={viewingReceiptModalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
                 >
-                  Reject / Disapprove
-                </button>
+                  <ExternalLink size={13} /> Open Full Size
+                </a>
                 <button
-                  onClick={() => handleApproveExpense(selectedExpense.id, true)}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border ${selectedExpense.status === 'APPROVED'
-                    ? 'bg-emerald-150 dark:bg-emerald-950/30 text-emerald-700 border-emerald-250/30 cursor-not-allowed'
-                    : 'bg-emerald-600 hover:bg-emerald-700 text-slate-900 border-transparent shadow-lg shadow-emerald-600/25'
-                    }`}
-                  disabled={selectedExpense.status === 'APPROVED'}
+                  onClick={() => setViewingReceiptModalUrl(null)}
+                  className="p-1.5 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all"
                 >
-                  Approve Expense
+                  <X size={18} />
                 </button>
               </div>
-            )}
+            </div>
+            <div className="max-h-[75vh] overflow-auto flex items-center justify-center w-full bg-black/50 rounded-2xl p-3">
+              <img
+                referrerPolicy="no-referrer"
+                src={viewingReceiptModalUrl}
+                alt="Receipt"
+                className="max-h-[70vh] max-w-full object-contain rounded-xl shadow-2xl"
+              />
+            </div>
           </div>
         </div>
       )}
+
+      {/* RAPID RECEIPT AUDIT & RECONCILIATION MODAL */}
+      {isAuditModeOpen && (() => {
+        const currentAuditExpense = auditableExpenses[auditCurrentIndex];
+        const currentLink = currentAuditExpense ? (currentAuditExpense.receipt_photo_link || currentAuditExpense.receipt_drive_link || (currentAuditExpense as any).receipt_url || '').trim() : '';
+        const currentImgUrl = currentAuditExpense ? getDriveImageUrl(currentAuditExpense.receipt_photo_link, currentAuditExpense.receipt_drive_link) : null;
+        const currentShared = currentLink ? (receiptUsageMap.get(currentLink) || []) : [];
+        const currentIsShared = currentShared.length > 1;
+        const currentSharedTotal = currentShared.reduce((s, x) => s + x.amount, 0);
+        const currentAudit = currentAuditExpense ? expenseAudits[currentAuditExpense.id] : undefined;
+        const enteredBillAmount = parseFloat(auditBillInput);
+        const hasParsedBill = !isNaN(enteredBillAmount) && enteredBillAmount > 0;
+        const isAmountMatching = currentAuditExpense && hasParsedBill && Math.abs(enteredBillAmount - currentAuditExpense.amount) < 0.01;
+        const isSharedMatching = currentAuditExpense && hasParsedBill && Math.abs(enteredBillAmount - currentSharedTotal) < 0.01;
+        const diffAmount = currentAuditExpense && hasParsedBill ? enteredBillAmount - currentAuditExpense.amount : 0;
+
+        return (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+            onClick={() => setIsAuditModeOpen(false)}
+          >
+            <div 
+              className="relative max-w-6xl w-full bg-slate-900 border border-slate-700/60 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[92vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* TOP HEADER */}
+              <div className="flex items-center justify-between px-6 py-3.5 bg-slate-950/80 border-b border-slate-800 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md">
+                    <Zap size={16} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-extrabold text-sm text-white">Rapid Receipt Reconciliation</h3>
+                      <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-mono px-2 py-0.5 rounded-full font-bold">
+                        Audit Mode
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      Compare receipt image against recorded amount • Use <kbd className="bg-slate-800 px-1 py-0.5 rounded border border-slate-700 text-slate-300">←</kbd> <kbd className="bg-slate-800 px-1 py-0.5 rounded border border-slate-700 text-slate-300">→</kbd> to navigate
+                    </p>
+                  </div>
+                </div>
+
+                {/* Filter and Progress Controls */}
+                <div className="flex items-center gap-3">
+                  {/* Filter selector */}
+                  <select
+                    value={auditFilter}
+                    onChange={(e) => {
+                      setAuditFilter(e.target.value as any);
+                      setAuditCurrentIndex(0);
+                    }}
+                    className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-1.5 font-bold focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  >
+                    <option value="ALL">All With Receipts ({expenses.filter(e => hasReceipt(e)).length})</option>
+                    <option value="MISMATCH">Mismatches ({mismatchExpenses.length})</option>
+                    <option value="SHARED">Shared Bills ({sharedReceiptExpenses.length})</option>
+                    <option value="UNREVIEWED">Unreviewed</option>
+                  </select>
+
+                  <span className="text-xs font-mono font-bold text-indigo-400 bg-indigo-950/50 border border-indigo-800/40 px-3 py-1 rounded-xl whitespace-nowrap">
+                    {auditableExpenses.length > 0 ? `${auditCurrentIndex + 1} / ${auditableExpenses.length}` : '0 / 0'}
+                  </span>
+
+                  <button
+                    onClick={() => setIsAuditModeOpen(false)}
+                    className="p-1.5 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-xl transition-all"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* BODY: SPLIT VIEW */}
+              {!currentAuditExpense ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8">
+                  <CheckCheck size={48} className="text-emerald-500 mb-3 opacity-60" />
+                  <h4 className="text-lg font-bold text-white mb-1">No Receipts Found</h4>
+                  <p className="text-xs text-slate-400">There are no expenses matching the current audit filter "{auditFilter}".</p>
+                </div>
+              ) : (
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden min-h-0">
+                  {/* LEFT SIDE: RECEIPT IMAGE VIEWER (7 COLS) */}
+                  <div className="lg:col-span-7 bg-black/60 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col min-h-0 relative">
+                    {/* Viewport Toolbar */}
+                    <div className="flex items-center justify-between p-2.5 bg-slate-950/60 border-b border-slate-800/80 z-10 shrink-0">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => setAuditImageZoom(prev => Math.min(prev + 0.25, 3))}
+                          className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs flex items-center gap-1 transition-all"
+                          title="Zoom In"
+                        >
+                          <ZoomIn size={14} />
+                        </button>
+                        <button
+                          onClick={() => setAuditImageZoom(prev => Math.max(prev - 0.25, 0.75))}
+                          className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs flex items-center gap-1 transition-all"
+                          title="Zoom Out"
+                        >
+                          <ZoomOut size={14} />
+                        </button>
+                        <button
+                          onClick={() => setAuditImageRotation(prev => (prev + 90) % 360)}
+                          className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs flex items-center gap-1 transition-all"
+                          title="Rotate 90 degrees"
+                        >
+                          <RotateCw size={14} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setAuditImageZoom(1);
+                            setAuditImageRotation(0);
+                          }}
+                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[10px] font-bold transition-all"
+                        >
+                          Reset
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {currentImgUrl && (
+                          <a
+                            href={currentImgUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+                          >
+                            <ExternalLink size={12} /> Full Size
+                          </a>
+                        )}
+                        {currentAuditExpense.receipt_drive_link && (
+                          <a
+                            href={currentAuditExpense.receipt_drive_link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-2.5 py-1 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+                          >
+                            Google Drive <ExternalLink size={12} />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Image Viewport */}
+                    <div className="flex-1 overflow-auto flex items-center justify-center p-4 min-h-[280px]">
+                      {currentImgUrl ? (
+                        <img
+                          referrerPolicy="no-referrer"
+                          src={currentImgUrl}
+                          alt="Receipt Audit"
+                          className="max-h-[60vh] max-w-full object-contain rounded-xl transition-transform duration-200 select-none shadow-2xl"
+                          style={{
+                            transform: `scale(${auditImageZoom}) rotate(${auditImageRotation}deg)`
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.parentElement) {
+                              e.currentTarget.parentElement.innerHTML = '<div class="text-center p-6 text-slate-400"><p class="font-bold text-sm mb-2">Drive Image Protected / Unavailable</p><a href="' + (currentAuditExpense.receipt_drive_link || currentImgUrl) + '" target="_blank" class="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1">Open in Google Drive &rarr;</a></div>';
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="text-center text-slate-400 p-6">
+                          <Receipt size={40} className="mx-auto mb-2 opacity-40" />
+                          <p className="font-bold text-sm">No direct image URL</p>
+                          {currentAuditExpense.receipt_drive_link && (
+                            <a
+                              href={currentAuditExpense.receipt_drive_link}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold"
+                            >
+                              Open in Drive <ExternalLink size={12} />
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Shared Receipt Banner if applicable */}
+                    {currentIsShared && (
+                      <div className="bg-violet-950/70 border-t border-violet-800/60 p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shrink-0">
+                        <div className="flex items-center gap-2">
+                          <Link2 size={16} className="text-violet-400 shrink-0" />
+                          <div className="text-[11px] text-violet-200">
+                            <strong className="text-white">Shared Receipt Notice:</strong> This receipt is attached to <strong>{currentShared.length} expense records</strong> totaling <strong className="text-emerald-400 font-mono">₹{currentSharedTotal.toLocaleString('en-IN')}</strong>
+                          </div>
+                        </div>
+                        <span className="text-[10px] bg-violet-800/60 text-violet-200 px-2 py-0.5 rounded-md font-mono whitespace-nowrap">
+                          {currentShared.length} items
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* RIGHT SIDE: RECONCILIATION & COMPARISON PANEL (5 COLS) */}
+                  <div className="lg:col-span-5 bg-slate-900 p-5 flex flex-col justify-between overflow-y-auto space-y-4">
+                    <div className="space-y-4">
+                      {/* Expense Summary Header */}
+                      <div className="border-b border-slate-800 pb-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] uppercase font-mono text-slate-400 font-bold tracking-wider">
+                            ID: {currentAuditExpense.id}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                            {currentAuditExpense.category}
+                          </span>
+                        </div>
+                        <h4 className="font-extrabold text-base text-white mt-1">
+                          {currentAuditExpense.title}
+                        </h4>
+                        <div className="flex items-center gap-3 text-xs text-slate-400 mt-1.5 font-medium">
+                          <span>🗓 {new Date(currentAuditExpense.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                          <span>•</span>
+                          <span>👤 {currentAuditExpense.uploaded_by || currentAuditExpense.created_by_name || 'Admin'}</span>
+                          {currentAuditExpense.target_group && (
+                            <>
+                              <span>•</span>
+                              <span className="text-indigo-400 font-mono font-semibold">For: {currentAuditExpense.target_group}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* AMOUNT COMPARISON BOX */}
+                      <div className="rounded-2xl p-4 bg-slate-950 border border-slate-800/80 space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          {/* System Recorded Amount */}
+                          <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                            <span className="text-[9px] uppercase font-bold text-slate-400 block mb-1">
+                              Recorded in System
+                            </span>
+                            <span className="text-2xl font-black text-slate-100 font-mono">
+                              ₹ {currentAuditExpense.amount.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+
+                          {/* Actual Receipt Bill Amount (User typed) */}
+                          <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                            <label className="text-[9px] uppercase font-bold text-indigo-400 block mb-1">
+                              Amount on Bill Receipt
+                            </label>
+                            <div className="flex items-center gap-1">
+                              <span className="text-slate-400 font-bold text-sm">₹</span>
+                              <input
+                                type="number"
+                                placeholder="e.g. 1000"
+                                value={auditBillInput}
+                                onChange={(e) => setAuditBillInput(e.target.value)}
+                                className="w-full bg-slate-950 border border-slate-700 text-white font-mono font-black text-lg rounded-lg px-2 py-0.5 focus:outline-none focus:border-indigo-500"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* LIVE COMPARISON STATUS / ALERT */}
+                        {hasParsedBill ? (
+                          isAmountMatching ? (
+                            <div className="bg-emerald-950/40 border border-emerald-800/50 rounded-xl p-2.5 flex items-center gap-2 text-emerald-400 text-xs font-semibold">
+                              <CheckCircle2 size={16} className="shrink-0" />
+                              <span>Exact Match! Recorded amount matches receipt bill.</span>
+                            </div>
+                          ) : currentIsShared && isSharedMatching ? (
+                            <div className="bg-violet-950/40 border border-violet-800/50 rounded-xl p-2.5 flex items-center gap-2 text-violet-300 text-xs font-semibold">
+                              <CheckCheck size={16} className="shrink-0 text-violet-400" />
+                              <span>Shared Bill Match! Combined {currentShared.length} entries (₹{currentSharedTotal.toLocaleString('en-IN')}) equal receipt bill (₹{enteredBillAmount.toLocaleString('en-IN')}).</span>
+                            </div>
+                          ) : (
+                            <div className="bg-rose-950/50 border border-rose-800/60 rounded-xl p-3 space-y-2">
+                              <div className="flex items-center justify-between text-xs font-bold text-rose-400">
+                                <span className="flex items-center gap-1.5">
+                                  <AlertTriangle size={15} />
+                                  Amount Discrepancy Found
+                                </span>
+                                <span className="font-mono text-sm">
+                                  {diffAmount > 0 ? `+₹${diffAmount.toLocaleString('en-IN')}` : `-₹${Math.abs(diffAmount).toLocaleString('en-IN')}`}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-rose-300/90 leading-tight">
+                                System shows <strong>₹{currentAuditExpense.amount.toLocaleString('en-IN')}</strong>, but receipt bill shows <strong>₹{enteredBillAmount.toLocaleString('en-IN')}</strong>.
+                              </p>
+                              <button
+                                onClick={() => {
+                                  handleUpdateExpenseAmount(currentAuditExpense.id, enteredBillAmount, auditNoteInput || `Corrected from ₹${currentAuditExpense.amount} to ₹${enteredBillAmount} to match receipt`);
+                                  if (auditCurrentIndex < auditableExpenses.length - 1) {
+                                    setAuditCurrentIndex(prev => prev + 1);
+                                  }
+                                }}
+                                className="w-full py-2 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-700 hover:to-amber-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all hover:scale-[1.01]"
+                              >
+                                <Zap size={14} />
+                                <span>⚡ Fix Expense Amount to ₹{enteredBillAmount.toLocaleString('en-IN')}</span>
+                              </button>
+                            </div>
+                          )
+                        ) : (
+                          <p className="text-[11px] text-slate-400 text-center py-1">
+                            Type the amount seen on the receipt bill above to check for discrepancies.
+                          </p>
+                        )}
+                      </div>
+
+                      {/* AUDIT NOTE INPUT */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-slate-400 block">
+                          Audit / Reconciliation Notes (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Shared bill for groceries, partial claim, or corrected typo..."
+                          value={auditNoteInput}
+                          onChange={(e) => setAuditNoteInput(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl p-2.5 focus:outline-none focus:border-indigo-500"
+                        />
+                      </div>
+
+                      {/* QUICK ACTION BUTTONS */}
+                      <div className="space-y-2">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                          Set Verification Status
+                        </span>
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            onClick={() => {
+                              handleSaveAuditRecord(
+                                currentAuditExpense.id,
+                                'VERIFIED_MATCH',
+                                hasParsedBill ? enteredBillAmount : currentAuditExpense.amount,
+                                auditNoteInput
+                              );
+                              if (auditCurrentIndex < auditableExpenses.length - 1) {
+                                setAuditCurrentIndex(prev => prev + 1);
+                              }
+                            }}
+                            className={`p-2.5 rounded-xl text-xs font-bold flex flex-col items-center gap-1 border transition-all ${
+                              currentAudit?.status === 'VERIFIED_MATCH'
+                                ? 'bg-emerald-600 text-white border-emerald-500 shadow-md'
+                                : 'bg-slate-800 hover:bg-emerald-950/40 text-slate-300 hover:text-emerald-400 border-slate-700'
+                            }`}
+                          >
+                            <CheckCircle2 size={16} />
+                            <span>Verified Match</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              handleSaveAuditRecord(
+                                currentAuditExpense.id,
+                                'SPLIT_BILL',
+                                hasParsedBill ? enteredBillAmount : (currentIsShared ? currentSharedTotal : currentAuditExpense.amount),
+                                auditNoteInput || `Shared bill among ${currentShared.length} items`
+                              );
+                              if (auditCurrentIndex < auditableExpenses.length - 1) {
+                                setAuditCurrentIndex(prev => prev + 1);
+                              }
+                            }}
+                            className={`p-2.5 rounded-xl text-xs font-bold flex flex-col items-center gap-1 border transition-all ${
+                              currentAudit?.status === 'SPLIT_BILL'
+                                ? 'bg-violet-600 text-white border-violet-500 shadow-md'
+                                : 'bg-slate-800 hover:bg-violet-950/40 text-slate-300 hover:text-violet-400 border-slate-700'
+                            }`}
+                          >
+                            <Split size={16} />
+                            <span>Split / Partial</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              handleSaveAuditRecord(
+                                currentAuditExpense.id,
+                                'MISMATCH',
+                                hasParsedBill ? enteredBillAmount : undefined,
+                                auditNoteInput || 'Flagged for volunteer clarification'
+                              );
+                              if (auditCurrentIndex < auditableExpenses.length - 1) {
+                                setAuditCurrentIndex(prev => prev + 1);
+                              }
+                            }}
+                            className={`p-2.5 rounded-xl text-xs font-bold flex flex-col items-center gap-1 border transition-all ${
+                              currentAudit?.status === 'MISMATCH'
+                                ? 'bg-rose-600 text-white border-rose-500 shadow-md'
+                                : 'bg-slate-800 hover:bg-rose-950/40 text-slate-300 hover:text-rose-400 border-slate-700'
+                            }`}
+                          >
+                            <AlertTriangle size={16} />
+                            <span>Flag Mismatch</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* BOTTOM NAVIGATION FOOTER */}
+                    <div className="pt-4 border-t border-slate-800 flex items-center justify-between gap-3 shrink-0">
+                      <button
+                        onClick={() => setAuditCurrentIndex(prev => Math.max(prev - 1, 0))}
+                        disabled={auditCurrentIndex === 0}
+                        className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center gap-2 transition-all"
+                      >
+                        <ChevronLeft size={16} /> Previous
+                      </button>
+
+                      <span className="text-xs font-mono font-semibold text-slate-400">
+                        {auditCurrentIndex + 1} of {auditableExpenses.length}
+                      </span>
+
+                      <button
+                        onClick={() => setAuditCurrentIndex(prev => Math.min(prev + 1, auditableExpenses.length - 1))}
+                        disabled={auditCurrentIndex >= auditableExpenses.length - 1}
+                        className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center gap-2 transition-all"
+                      >
+                        Next <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* HIDDEN FILE INPUT FOR QUICK RECEIPT ATTACHMENT */}
+      <input
+        type="file"
+        ref={receiptFileInputRef}
+        accept="image/*,.pdf"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (file && uploadingReceiptExpenseId) {
+            await handleUploadReceiptForExpense(uploadingReceiptExpenseId, file);
+            e.target.value = '';
+            setUploadingReceiptExpenseId(null);
+          }
+        }}
+      />
 
       {/* CREATE CUSTOM GEOFENCE SHAPE MODAL FOR OPENSTREETMAP */}
       {showAddLocationModal && (

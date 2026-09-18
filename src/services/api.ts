@@ -987,6 +987,28 @@ export const apiService = {
     }
   },
 
+  // Update Expense Amount & Notes
+  updateExpenseAmount: async (expenseId: string, amount: number, notes?: string): Promise<boolean> => {
+    try {
+      const authHeaders = await getAuthHeader();
+      const res = await fetch(`${BASE_URL}/api/v1/expenses/${expenseId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders,
+        },
+        body: JSON.stringify({
+          amount,
+          notes,
+        }),
+      });
+      return res.ok;
+    } catch (err) {
+      console.error("Error updating expense amount:", err);
+      return false;
+    }
+  },
+
   // Upload Expense Receipt File
   uploadReceipt: async (expenseId: string, file: File): Promise<boolean> => {
     try {
