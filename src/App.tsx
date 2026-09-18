@@ -2159,19 +2159,32 @@ function App() {
     );
   }, []);
 
+  const monthFilteredExpenses = useMemo(() => {
+    if (expenseMonthFilter === 'ALL') return expenses;
+    return expenses.filter(e => {
+      try {
+        const d = new Date(e.date);
+        return !isNaN(d.getTime()) && d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) === expenseMonthFilter;
+      } catch {
+        return false;
+      }
+    });
+  }, [expenses, expenseMonthFilter]);
+
   const {
     totalWithReceipts,
     totalWithoutReceipts,
     totalWithReceiptsAmount,
     totalWithoutReceiptsAmount,
     receiptComplianceRate
+
   } = useMemo(() => {
     const withRec: Expense[] = [];
     const withoutRec: Expense[] = [];
     let withAmount = 0;
     let withoutAmount = 0;
-    for (let i = 0; i < expenses.length; i++) {
-      const e = expenses[i];
+    for (let i = 0; i < monthFilteredExpenses.length; i++) {
+      const e = monthFilteredExpenses[i];
       if (hasReceipt(e)) {
         withRec.push(e);
         withAmount += (e.amount || 0);
@@ -2180,7 +2193,7 @@ function App() {
         withoutAmount += (e.amount || 0);
       }
     }
-    const rate = expenses.length > 0 ? Math.round((withRec.length / expenses.length) * 100) : 0;
+    const rate = monthFilteredExpenses.length > 0 ? Math.round((withRec.length / monthFilteredExpenses.length) * 100) : 0;
     return {
       totalWithReceipts: withRec,
       totalWithoutReceipts: withoutRec,
@@ -2188,7 +2201,7 @@ function App() {
       totalWithoutReceiptsAmount: withoutAmount,
       receiptComplianceRate: rate
     };
-  }, [expenses, hasReceipt]);
+  }, [monthFilteredExpenses, hasReceipt]);
 
   // Pre-extracted unique months for the dropdown filter (memoized)
   const availableExpenseMonths = useMemo(() => {
@@ -2243,21 +2256,10 @@ function App() {
     const hasQuery = Boolean(query);
     const catFilter = expenseCategoryFilter.toLowerCase();
     const hasCatFilter = expenseCategoryFilter !== 'ALL';
-    const hasMonthFilter = expenseMonthFilter !== 'ALL';
     const recFilter = expenseReceiptFilter;
 
-    const result = expenses.filter(e => {
+    const result = monthFilteredExpenses.filter(e => {
       if (hasCatFilter && (!e.category || e.category.toLowerCase() !== catFilter)) return false;
-      if (hasMonthFilter) {
-        try {
-          const d = new Date(e.date);
-          if (isNaN(d.getTime()) || d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) !== expenseMonthFilter) {
-            return false;
-          }
-        } catch {
-          return false;
-        }
-      }
       if (hasQuery) {
         const titleMatch = e.title && e.title.toLowerCase().includes(query);
         const nameMatch = (e.created_by_name && e.created_by_name.toLowerCase().includes(query)) ||
@@ -2276,28 +2278,17 @@ function App() {
       const timeB = new Date(b.date).getTime() || 0;
       return timeB - timeA;
     });
-  }, [expenses, expenseCategoryFilter, expenseMonthFilter, expenseSearchQuery, expenseReceiptFilter, hasReceipt]);
+  }, [monthFilteredExpenses, expenseCategoryFilter, expenseSearchQuery, expenseReceiptFilter, hasReceipt]);
 
   const receiptsTabExpenses = useMemo(() => {
     const query = expenseSearchQuery.trim().toLowerCase();
     const hasQuery = Boolean(query);
     const catFilter = expenseCategoryFilter.toLowerCase();
     const hasCatFilter = expenseCategoryFilter !== 'ALL';
-    const hasMonthFilter = expenseMonthFilter !== 'ALL';
     const tabFilter = receiptTabStatusFilter;
 
-    const result = expenses.filter(e => {
+    const result = monthFilteredExpenses.filter(e => {
       if (hasCatFilter && (!e.category || e.category.toLowerCase() !== catFilter)) return false;
-      if (hasMonthFilter) {
-        try {
-          const d = new Date(e.date);
-          if (isNaN(d.getTime()) || d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) !== expenseMonthFilter) {
-            return false;
-          }
-        } catch {
-          return false;
-        }
-      }
       if (hasQuery) {
         const titleMatch = e.title && e.title.toLowerCase().includes(query);
         const nameMatch = (e.created_by_name && e.created_by_name.toLowerCase().includes(query)) ||
@@ -2325,10 +2316,10 @@ function App() {
       const timeB = new Date(b.date).getTime() || 0;
       return timeB - timeA;
     });
-  }, [expenses, expenseCategoryFilter, expenseMonthFilter, expenseSearchQuery, receiptTabStatusFilter, expenseAudits, receiptUsageMap, hasReceipt]);
+  }, [monthFilteredExpenses, expenseCategoryFilter, expenseSearchQuery, receiptTabStatusFilter, expenseAudits, receiptUsageMap, hasReceipt]);
 
   const auditableExpenses = useMemo(() => {
-    return expenses.filter(e => {
+    return monthFilteredExpenses.filter(e => {
       if (!hasReceipt(e)) return false;
       if (auditFilter === 'MISMATCH') {
         const audit = expenseAudits[e.id];
@@ -2343,7 +2334,7 @@ function App() {
       }
       return true;
     });
-  }, [expenses, auditFilter, expenseAudits, receiptUsageMap, hasReceipt]);
+  }, [monthFilteredExpenses, auditFilter, expenseAudits, receiptUsageMap, hasReceipt]);
 
   // Reset pagination on filter updates
   useEffect(() => {
@@ -4714,7 +4705,7 @@ function App() {
                       <FileText size={24} strokeWidth={2} />
                     </div>
                     <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-white/80 mb-1 block">Total Records</span>
-                    <strong className="text-4xl xl:text-5xl text-white font-extrabold tracking-tight leading-none">{expenses.length}</strong>
+                    <strong className="text-4xl xl:text-5xl text-white font-extrabold tracking-tight leading-none">{monthFilteredExpenses.length}</strong>
                   </div>
                   
                   {/* Decorative mini chart */}
@@ -4780,7 +4771,7 @@ function App() {
                       <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                         expenseSubTab === 'receipts' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                       }`}>
-                        {totalWithReceipts.length}/{expenses.length}
+                        {totalWithReceipts.length}/{monthFilteredExpenses.length}
                       </span>
                     </button>
                     <button
@@ -4862,7 +4853,7 @@ function App() {
                   <div className="space-y-4 pt-2">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 px-1">
                       <span className="text-xs font-bold text-slate-500">
-                        Showing {filteredFinanceExpenses.length} of {expenses.length} Expense Logs
+                        Showing {filteredFinanceExpenses.length} of {monthFilteredExpenses.length} Expense Logs
                         {expenseSearchQuery && <span className="text-slate-800 dark:text-teal-400 font-semibold ml-1.5">(Filtered by "{expenseSearchQuery}")</span>}
                       </span>
                       {/* Receipt Filter Quick Switcher */}
@@ -4876,7 +4867,7 @@ function App() {
                               : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                           }`}
                         >
-                          All ({expenses.length})
+                          All ({monthFilteredExpenses.length})
                         </button>
                         <button
                           onClick={() => setExpenseReceiptFilter('WITH_RECEIPT')}
@@ -5267,7 +5258,7 @@ function App() {
                             <div>
                               <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 block">Total Entries</span>
                               <h4 className="text-lg font-black text-slate-900 dark:text-white">
-                                {expenses.length}
+                                {monthFilteredExpenses.length}
                               </h4>
                             </div>
                           </div>
@@ -5346,7 +5337,7 @@ function App() {
                           }`}
                         >
                           <Receipt size={14} />
-                          All ({expenses.length})
+                          All ({monthFilteredExpenses.length})
                         </button>
                       </div>
 
