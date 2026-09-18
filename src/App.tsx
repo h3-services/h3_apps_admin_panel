@@ -2436,8 +2436,12 @@ function App() {
 
         {/* Brand/Logo Header */}
         <div className={`p-6 pt-8 flex items-center shrink-0 ${sidebarOpen ? 'justify-between' : 'justify-center'} pb-6`}>
-          <div className="flex items-center gap-3 w-full">
-            <div className="relative cursor-pointer shrink-0 mx-auto lg:mx-0">
+          <div 
+            className="flex items-center gap-3 w-full cursor-pointer"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            title="Toggle Sidebar"
+          >
+            <div className="relative shrink-0 mx-auto lg:mx-0">
               <img src="/hope3_logo-removebg-preview.png" alt="Hope3 Logo" className={`relative object-contain animate-[spin_8s_linear_infinite] transition-all duration-300 ${sidebarOpen ? 'w-11 h-11' : 'w-12 h-12 '}`} />
             </div>
             {sidebarOpen && (
@@ -4760,21 +4764,6 @@ function App() {
                       All Records
                     </button>
                     <button
-                      onClick={() => setExpenseSubTab('receipts')}
-                      className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${expenseSubTab === 'receipts'
-                        ? 'gradient-btn-tab shadow-md'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900'
-                        }`}
-                    >
-                      <Receipt size={14} />
-                      <span>Receipts</span>
-                      <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        expenseSubTab === 'receipts' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                      }`}>
-                        {totalWithReceipts.length}/{monthFilteredExpenses.length}
-                      </span>
-                    </button>
-                    <button
                       onClick={() => setExpenseSubTab('analytics')}
                       className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${expenseSubTab === 'analytics'
                         ? 'gradient-btn-tab shadow-md'
@@ -4788,7 +4777,7 @@ function App() {
                   {/* Category Filter Pills & Expandable Search Bar */}
                   <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">                    {/* Category Filter Pills */}
                     <div className="flex flex-wrap items-center gap-2 max-w-full pb-1 lg:pb-0">
-                      {['ALL', 'Electricals', 'H3 Services', 'Sports expenses', 'Snacks / Fruits', 'Stationaries', 'Food', 'Academic', 'Internet', 'Transport', 'Toilateries', 'Basic Essentials', 'Medical', 'Water', 'Electronics', 'Other'].map((cat) => {
+                      {['ALL', 'Electricals', 'Sports expenses', 'Snacks / Fruits', 'Stationaries', 'Food', 'Academic', 'Internet', 'Transport', 'Toilateries', 'Basic Essentials', 'Medical', 'Water', 'Electronics', 'Other'].map((cat) => {
                         const isActive = expenseCategoryFilter === cat;
                         return (
                           <button
@@ -6809,7 +6798,6 @@ function App() {
                     className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-bold focus:outline-none focus:border-teal-500"
                   >
                     <option value="Electricals">Electricals</option>
-                    <option value="H3 Services">H3 Services</option>
                     <option value="Sports expenses">Sports expenses</option>
                     <option value="Snacks / Fruits">Snacks / Fruits</option>
                     <option value="Stationaries">Stationaries</option>
