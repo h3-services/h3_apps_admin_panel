@@ -1760,7 +1760,7 @@ function App() {
         full_name: data.name,
         email: data.email,
         phone: data.phone,
-        specialization: 'Admin', // default for Admin
+        specialization: data.role || 'Admin', // Use role from form data or default to Admin
         availability: 'Flexible', // default for Admin
         bio: 'Administrator',
         joined_date: (isEdit && selectedVolunteer) ? selectedVolunteer.joined_date : new Date().toISOString().split('T')[0],
@@ -1774,7 +1774,7 @@ function App() {
           await apiService.updateUser(payload.user_id, { email: data.email, phone: data.phone, name: data.name });
         }
         if (selectedVolunteer && (selectedVolunteer.id === editId || (selectedVolunteer as any).volunteer_id === editId)) {
-          setSelectedVolunteer({ ...selectedVolunteer, name: data.name, email: data.email, phone: data.phone, specialization: 'Admin', availability: 'Flexible' } as any);
+          setSelectedVolunteer({ ...selectedVolunteer, name: data.name, email: data.email, phone: data.phone, specialization: data.role || 'Admin', availability: 'Flexible' } as any);
         }
       } else {
         const res = await apiService.createVolunteer(payload);

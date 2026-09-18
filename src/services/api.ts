@@ -598,7 +598,8 @@ export const apiService = {
             is_deleted: 0
           });
         }
-        await apiService.assignUserRole(userId, [payload.specialization === 'Admin' ? 'admin' : 'volunteer']);
+        const assignedRole = payload.specialization === 'Super Admin' ? 'superadmin' : payload.specialization === 'Admin' ? 'admin' : 'volunteer';
+        await apiService.assignUserRole(userId, [assignedRole]);
         return alreadyExists;
       }
 
@@ -612,7 +613,8 @@ export const apiService = {
       });
 
       if (res.ok) {
-        await apiService.assignUserRole(userId, [payload.specialization === 'Admin' ? 'admin' : 'volunteer']);
+        const assignedRole = payload.specialization === 'Super Admin' ? 'superadmin' : payload.specialization === 'Admin' ? 'admin' : 'volunteer';
+        await apiService.assignUserRole(userId, [assignedRole]);
         return await res.json();
       }
 

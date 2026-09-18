@@ -117,8 +117,8 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
         setFormData({ ...initialData, countryCode: pCode, phone: pPhone, name: initialData.name || initialData.student_name, rollNo: initialData.rollNo || initialData.student_code, grade: initialData.grade || initialData.course || initialData.year, college: initialData.college || initialData.school_name });
       } else if (type === 'Parent') {
         setFormData({ ...initialData, countryCode: pCode, phone: pPhone, name: initialData.name || initialData.parent_name, relationship: initialData.guardianName || initialData.relationship || initialData.relation, childId: initialData.childId || initialData.student_id });
-      } else if (type === 'Volunteer') {
-        setFormData({ ...initialData, countryCode: pCode, phone: pPhone, name: initialData.name || initialData.full_name });
+      } else if (type === 'Volunteer' || type === 'Admin') {
+        setFormData({ ...initialData, countryCode: pCode, phone: pPhone, name: initialData.name || initialData.full_name, role: initialData.specialization || 'Admin' });
       } else if (type === 'Donor') {
         setFormData({ ...initialData, countryCode: pCode, phone: pPhone, name: initialData.name || initialData.organization_name, address: initialData.address, contribution: initialData.totalDonated || initialData.contribution });
       } else {
@@ -401,6 +401,7 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
           </div>
         );
       case 'Admin':
+        const isSuperAdmin = (sessionStorage.getItem('userRole') || '').toLowerCase().includes('super');
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
@@ -408,6 +409,15 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
             </div>
             <CustomInput required name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
             <CustomPhoneInput required name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
+            {isSuperAdmin && (
+              <CustomSelect
+                name="role"
+                placeholder="Admin Role"
+                value={formData.role || 'Admin'}
+                onChange={handleChange}
+                options={['Admin', 'Super Admin']}
+              />
+            )}
           </div>
         );
       case 'Volunteer':

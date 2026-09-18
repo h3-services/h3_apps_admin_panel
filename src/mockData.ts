@@ -216,7 +216,8 @@ export const initialDonors: Donor[] = [
     totalDonated: 95000,
     formattedAmount: '₹95,000.00',
     status: 'Active Sponsor',
-    joined_date: '2026-05-30'
+    joined_date: '2026-05-30',
+    address: '123 Edu Tech Park, Chennai, TN, India'
   },
   {
     id: 'DON003',

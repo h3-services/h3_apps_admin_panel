@@ -31,17 +31,17 @@ const formatDate = (dateStr: string): string => {
       const dateObj = new Date(y, m, d);
       if (!isNaN(dateObj.getTime())) {
         const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = dateObj.toLocaleString('en-US', { month: 'long' });
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
         const year = dateObj.getFullYear();
-        return `${day} ${month}, ${year}`;
+        return `${month}/${day}/${year}`;
       }
     }
     const d = new Date(dateStr);
     if (!isNaN(d.getTime())) {
       const day = String(d.getDate()).padStart(2, '0');
-      const month = d.toLocaleString('en-US', { month: 'long' });
+      const month = String(d.getMonth() + 1).padStart(2, '0');
       const year = d.getFullYear();
-      return `${day} ${month}, ${year}`;
+      return `${month}/${day}/${year}`;
     }
   } catch (e) {}
   return dateStr;
@@ -171,12 +171,11 @@ export const generateContributionReceipt = async (
     startY: tableStartY,
     margin: { left: 20, right: 20 },
     theme: 'plain',
-    head: [['Item', 'Quantity', 'Price', 'Amount']],
+    head: [['DATE', 'DONATION', 'AMOUNT']],
     body: [
       [
+        displayDate,
         { content: itemDescription },
-        '1',
-        amountStr,
         amountStr
       ]
     ],
@@ -194,10 +193,9 @@ export const generateContributionReceipt = async (
       lineColor: [229, 231, 235]
     },
     columnStyles: {
-      0: { cellWidth: 76, halign: 'left' },
-      1: { cellWidth: 24, halign: 'center' },
-      2: { cellWidth: 35, halign: 'right' },
-      3: { cellWidth: 35, halign: 'right' }
+      0: { cellWidth: 35, halign: 'left' },
+      1: { cellWidth: 100, halign: 'left' },
+      2: { cellWidth: 35, halign: 'right' }
     }
   });
 
@@ -233,7 +231,7 @@ export const generateContributionReceipt = async (
   const noteW = doc.getTextWidth('Note: ');
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(55, 65, 81);
-  const noteText = 'Thank you for choosing us! HOPE3 Foundation (EIN: 83-4354101) is a 501(c)(3) tax exempt non-profit organization.';
+  const noteText = 'Thank you for choosing us! HOPE3 Foundation is a tax exempt non-profit organization.';
   const splitNote = doc.splitTextToSize(noteText, 145);
   doc.text(splitNote, 20 + noteW, metaY + 6.5);
 
