@@ -7155,7 +7155,7 @@ function App() {
                           src={getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link) || "https://placehold.co/400"}
                           alt="Expense Receipt"
                           className="w-full max-h-52 object-contain hover:scale-[1.02] transition-transform cursor-zoom-in rounded-xl"
-                          onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<a href="' + (selectedExpense.receipt_drive_link || selectedExpense.receipt_photo_link) + '" target="_blank" class="block w-full py-4 text-center border-2 border-dashed border-red-200 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50">Private Google Drive Image. Click to view externally.</a>'; }}
+                          onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<div class="text-center p-6 text-slate-400 border-2 border-dashed border-indigo-200 dark:border-indigo-900/50 rounded-xl bg-indigo-50/50 dark:bg-indigo-900/10"><p class="font-bold text-sm mb-2 text-indigo-900 dark:text-indigo-300">Drive Image Protected / Unavailable</p><a href="' + (selectedExpense.receipt_drive_link || selectedExpense.receipt_photo_link) + '" target="_blank" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold inline-flex items-center gap-1 shadow hover:bg-indigo-700 transition-colors">Open in Google Drive &rarr;</a></div>'; }}
                           onClick={() => setViewingReceiptModalUrl(getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link) || modalReceiptLink)}
                         />
                       ) : (
