@@ -351,6 +351,8 @@ export const apiService = {
         donorType: category,
         organizationName: item.organization_name || '',
         totalDonated: numAmount,
+        amount_inr: item.amount_inr !== undefined ? item.amount_inr : numAmount,
+        amount_usd: item.amount_usd || 0,
         formattedAmount: formattedAmount,
         status: 'Active Sponsor' as "Active Sponsor" | "Past Benefactor",
         profile_photo_link: formatAvatarUrl(item.profile_photo_link || user.profile_photo_link),
@@ -852,7 +854,7 @@ export const apiService = {
   updateDonor: async (id: string, payload: any): Promise<any> => {
     try {
       const authHeaders = await getAuthHeader();
-      const cleanPayload = {
+      const cleanPayload: any = {
         user_id: payload.user_id || "00000000-0000-0000-0000-000000000000",
         donor_type: payload.donor_type || "individual",
         total_donated: Number(payload.total_donated || payload.contribution || 0),
@@ -861,6 +863,8 @@ export const apiService = {
         profile_photo_link: payload.profile_photo_link || "string",
         address: payload.address || "string"
       };
+      if (payload.amount_inr !== undefined) cleanPayload.amount_inr = payload.amount_inr;
+      if (payload.amount_usd !== undefined) cleanPayload.amount_usd = payload.amount_usd;
 
       const res = await fetch(`${BASE_URL}/api/v1/donors/${id}`, {
         method: 'PUT',

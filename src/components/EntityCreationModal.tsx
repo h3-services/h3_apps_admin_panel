@@ -56,11 +56,11 @@ const CustomPhoneInput = ({ name, placeholder, onChange, required, value, onCoun
     <div className="flex gap-2">
       <div className="relative w-1/3">
         <select
-          value={countryCodeValue || '+91'}
+          value={countryCodeValue || '🇮🇳 IN (+91)'}
           onChange={onCountryCodeChange}
           className={`w-full px-3 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-semibold text-slate-900 dark:text-white appearance-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
         >
-          {countryCodes.map(c => <option key={c.label} value={c.code}>{c.label}</option>)}
+          {countryCodes.map(c => <option key={c.label} value={c.label}>{c.label}</option>)}
         </select>
         <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-500 dark:text-slate-400">
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -102,30 +102,30 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
   React.useEffect(() => {
     if (initialData) {
       let pPhone = initialData.phone || '';
-      let pCode = '+91';
+      let pCodeLabel = '🇮🇳 IN (+91)';
       // Sort codes by length descending to match longest code first (e.g. +971 before +9)
-      const codes = [...countryCodes].map(c => c.code).sort((a, b) => b.length - a.length);
+      const codes = [...countryCodes].sort((a, b) => b.code.length - a.code.length);
       for (const c of codes) {
-        if (pPhone.startsWith(c)) {
-          pCode = c;
-          pPhone = pPhone.slice(c.length).trim();
+        if (pPhone.startsWith(c.code)) {
+          pCodeLabel = c.label;
+          pPhone = pPhone.slice(c.code.length).trim();
           break;
         }
       }
 
       if (type === 'Student') {
-        setFormData({ ...initialData, countryCode: pCode, phone: pPhone, name: initialData.name || initialData.student_name, rollNo: initialData.rollNo || initialData.student_code, grade: initialData.grade || initialData.course || initialData.year, college: initialData.college || initialData.school_name });
+        setFormData({ ...initialData, countryCode: pCodeLabel, phone: pPhone, name: initialData.name || initialData.student_name, rollNo: initialData.rollNo || initialData.student_code, grade: initialData.grade || initialData.course || initialData.year, college: initialData.college || initialData.school_name });
       } else if (type === 'Parent') {
-        setFormData({ ...initialData, countryCode: pCode, phone: pPhone, name: initialData.name || initialData.parent_name, relationship: initialData.guardianName || initialData.relationship || initialData.relation, childId: initialData.childId || initialData.student_id });
+        setFormData({ ...initialData, countryCode: pCodeLabel, phone: pPhone, name: initialData.name || initialData.parent_name, relationship: initialData.guardianName || initialData.relationship || initialData.relation, childId: initialData.childId || initialData.student_id });
       } else if (type === 'Volunteer' || type === 'Admin') {
-        setFormData({ ...initialData, countryCode: pCode, phone: pPhone, name: initialData.name || initialData.full_name, role: initialData.specialization || 'Admin' });
+        setFormData({ ...initialData, countryCode: pCodeLabel, phone: pPhone, name: initialData.name || initialData.full_name, role: initialData.specialization || 'Admin' });
       } else if (type === 'Donor') {
-        setFormData({ ...initialData, countryCode: pCode, phone: pPhone, name: initialData.name || initialData.organization_name, address: initialData.address, contribution: initialData.totalDonated || initialData.contribution });
+        setFormData({ ...initialData, countryCode: pCodeLabel, phone: pPhone, name: initialData.name || initialData.organization_name, address: initialData.address, amount_inr: initialData.amount_inr || initialData.totalDonated || initialData.contribution || 0, amount_usd: initialData.amount_usd || 0 });
       } else {
-        setFormData({ ...initialData, countryCode: pCode, phone: pPhone });
+        setFormData({ ...initialData, countryCode: pCodeLabel, phone: pPhone });
       }
     } else {
-      setFormData({ countryCode: '+91', phone: '' });
+      setFormData({ countryCode: '🇮🇳 IN (+91)', phone: '' });
     }
   }, [initialData, isOpen, type]);
 
@@ -139,10 +139,12 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
     e.preventDefault();
     const finalData = { ...formData };
     if (finalData.phone && finalData.countryCode) {
-      finalData.phone = `${finalData.countryCode}${finalData.phone}`;
+      const codeMatch = finalData.countryCode.match(/\(([^)]+)\)/);
+      const code = codeMatch ? codeMatch[1] : finalData.countryCode;
+      finalData.phone = `${code}${finalData.phone}`;
     }
     onSubmit(type, finalData);
-    setFormData({ countryCode: '+91', phone: '' });
+    setFormData({ countryCode: '🇮🇳 IN (+91)', phone: '' });
     onClose();
   };
 
@@ -389,6 +391,12 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
             <CustomPhoneInput required name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
             <CustomInput required name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
 
+            {initialData && (
+              <div className="grid grid-cols-2 gap-4">
+                <CustomInput name="amount_inr" type="number" placeholder="Contributed (INR)" value={formData.amount_inr} onChange={handleChange} />
+                <CustomInput name="amount_usd" type="number" placeholder="Contributed (USD)" value={formData.amount_usd} onChange={handleChange} />
+              </div>
+            )}
             
             <button
               type="button"
