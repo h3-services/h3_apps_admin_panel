@@ -386,7 +386,15 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
 
         return (
           <div className="space-y-4">
-            <CustomInput required name="name" placeholder="Donor Organization / Name" value={formData.name} onChange={handleChange} />
+            <CustomSelect
+              required
+              name="donor_type"
+              placeholder="Donor Type"
+              value={formData.donor_type || 'Individual'}
+              onChange={handleChange}
+              options={['Individual', 'Organization']}
+            />
+            <CustomInput required name="name" placeholder={formData.donor_type === 'Organization' ? "Organization Name" : "Donor Name"} value={formData.name} onChange={handleChange} />
             <CustomInput required name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
             <CustomPhoneInput required name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
             <CustomInput required name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
