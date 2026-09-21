@@ -2561,7 +2561,7 @@ function App() {
 
 
               {/* ANALYTICS METRIC CARDS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 shrink-0">
 
                 {/* Metric 1 */}
                 <div className={`relative overflow-hidden rounded-[2rem] p-6 text-white ${themeClasses.bgGradientMain} shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[160px]`}>
@@ -2671,6 +2671,39 @@ function App() {
                           style={{ height: `${h * 10}%`, animationDelay: `${i * 150}ms` }}
                         ></div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+                {/* Metric 5 */}
+                <div className={`relative overflow-hidden rounded-[2rem] p-6 text-white ${themeClasses.bgGradientMain} shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between min-h-[160px]`}>
+                  <div className="absolute -right-20 -top-20 w-48 h-48 bg-white/10 rounded-full blur-2xl mix-blend-overlay"></div>
+                  <div className="absolute -bottom-20 -left-10 w-32 h-32 bg-black/10 rounded-full blur-xl mix-blend-overlay"></div>
+                  
+                  <div className="space-y-1 relative z-10">
+                    <span className="text-white/80 text-[10px] font-extrabold uppercase tracking-widest inline-block mb-1">
+                      Total Expenses
+                    </span>
+                    <div className="flex items-baseline gap-1.5 pt-1">
+                      <h3 className="text-3xl leading-none font-black tracking-tight font-sans text-white">
+                        ₹<CountUp to={Math.round(expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0))} duration={1} separator="," />
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="mt-4 relative z-10 grid grid-cols-3 gap-1.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                    <div className="flex flex-col bg-black/20 rounded-lg p-1.5 text-center shadow-inner leading-tight">
+                      <span className="opacity-70 mb-0.5">RCD 1</span>
+                      <span className="text-[10px]">₹{(expenses.filter(e => e.target_group === 'RCD_1').reduce((s, e) => s + (Number(e.amount) || 0), 0) / 1000).toFixed(1)}k</span>
+                      <span className="text-[7.5px] opacity-60 normal-case tracking-normal">${(expenses.filter(e => e.target_group === 'RCD_1').reduce((s, e) => s + (Number(e.amount) || 0), 0) / 83).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    </div>
+                    <div className="flex flex-col bg-black/20 rounded-lg p-1.5 text-center shadow-inner leading-tight">
+                      <span className="opacity-70 mb-0.5">RCD 2</span>
+                      <span className="text-[10px]">₹{(expenses.filter(e => e.target_group === 'RCD_2').reduce((s, e) => s + (Number(e.amount) || 0), 0) / 1000).toFixed(1)}k</span>
+                      <span className="text-[7.5px] opacity-60 normal-case tracking-normal">${(expenses.filter(e => e.target_group === 'RCD_2').reduce((s, e) => s + (Number(e.amount) || 0), 0) / 83).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    </div>
+                    <div className="flex flex-col bg-black/20 rounded-lg p-1.5 text-center shadow-inner leading-tight">
+                      <span className="opacity-70 mb-0.5">RCD 3</span>
+                      <span className="text-[10px]">₹{(expenses.filter(e => e.target_group === 'RCD_3').reduce((s, e) => s + (Number(e.amount) || 0), 0) / 1000).toFixed(1)}k</span>
+                      <span className="text-[7.5px] opacity-60 normal-case tracking-normal">${(expenses.filter(e => e.target_group === 'RCD_3').reduce((s, e) => s + (Number(e.amount) || 0), 0) / 83).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                     </div>
                   </div>
                 </div>
