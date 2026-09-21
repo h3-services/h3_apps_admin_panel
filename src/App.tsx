@@ -261,7 +261,7 @@ const ActivityCardNode = ({ activity, setViewingActivityImages, onDelete }: { ac
                 onDelete(activity.activity_id || activity.id, activity.title);
               }}
               className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all"
-              title="Delete Activity"
+              title="Delete Event"
             >
               <Trash2 size={16} />
             </button>
@@ -1491,7 +1491,7 @@ function App() {
     { name: 'Donors', icon: HeartHandshake },
     { name: 'Contributions', icon: Receipt },
     { name: 'Finance', icon: DollarSign },
-    { name: 'Activities', icon: CalendarDays },
+    { name: 'Events', icon: CalendarDays },
     { name: 'Location', icon: MapPin },
   ];
 
@@ -2849,7 +2849,6 @@ function App() {
                   {(() => {
                     const distributionData = [
                       { name: 'electricals', icon: <Zap size={14} />, color: '#f59e0b', bg: 'bg-[#f59e0b]/10 text-[#f59e0b]' },
-                      { name: 'h3 services', icon: <Briefcase size={14} />, color: '#3b82f6', bg: 'bg-[#3b82f6]/10 text-[#3b82f6]' },
                       { name: 'sports expenses', icon: <Trophy size={14} />, color: '#ef4444', bg: 'bg-[#ef4444]/10 text-[#ef4444]' },
                       { name: 'snacks / fruits', icon: <Coffee size={14} />, color: '#8b5cf6', bg: 'bg-[#8b5cf6]/10 text-[#8b5cf6]' },
                       { name: 'stationaries', icon: <Pencil size={14} />, color: '#10b981', bg: 'bg-[#10b981]/10 text-[#10b981]' },
@@ -2865,17 +2864,24 @@ function App() {
                       { name: 'other', icon: <MoreHorizontal size={14} />, color: '#9ca3af', bg: 'bg-[#9ca3af]/10 text-[#9ca3af]' }
                     ];
 
+                    const allMappedNames = distributionData.map(d => d.name).filter(n => n !== 'other');
+                    
                     let calculatedData: any[] = distributionData.map(cat => {
-                      if (expenseAnalytics?.expense_distribution) {
-                        const stat = expenseAnalytics.expense_distribution.find((e: any) => e.category.toLowerCase() === cat.name);
-                        return { ...cat, amount: stat ? stat.amount : 0 };
+                      if (cat.name === 'other') {
+                        // Aggregate all expenses that don't match any of the predefined categories
+                        const otherAmount = expenses
+                          .filter(e => !e.category || !allMappedNames.includes(e.category.toLowerCase()))
+                          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+                        return { ...cat, amount: otherAmount };
                       }
+                      
                       return {
                         ...cat,
-                        amount: expenses.filter(e => e.category && e.category.toLowerCase() === cat.name).reduce((sum, e) => sum + e.amount, 0)
+                        amount: expenses.filter(e => e.category && e.category.toLowerCase() === cat.name).reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
                       };
                     });
-                    const totalExpenses = calculatedData.reduce((sum, cat) => sum + cat.amount, 0);
+                    
+                    const totalExpenses = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
 
                     if (totalExpenses === 0) {
                       calculatedData = [
@@ -5823,7 +5829,6 @@ function App() {
                   {(() => {
                     const distributionData = [
                       { name: 'electricals', icon: <Zap size={14} />, color: '#f59e0b', bg: 'bg-[#f59e0b]/10 text-[#f59e0b]' },
-                      { name: 'h3 services', icon: <Briefcase size={14} />, color: '#3b82f6', bg: 'bg-[#3b82f6]/10 text-[#3b82f6]' },
                       { name: 'sports expenses', icon: <Trophy size={14} />, color: '#ef4444', bg: 'bg-[#ef4444]/10 text-[#ef4444]' },
                       { name: 'snacks / fruits', icon: <Coffee size={14} />, color: '#8b5cf6', bg: 'bg-[#8b5cf6]/10 text-[#8b5cf6]' },
                       { name: 'stationaries', icon: <Pencil size={14} />, color: '#10b981', bg: 'bg-[#10b981]/10 text-[#10b981]' },
@@ -5971,13 +5976,13 @@ function App() {
           )}
 
           {/* MODULE: ACTIVITIES */}
-          {activeTab === 'Activities' && (
+          {activeTab === 'Events' && (
             <div className="space-y-6">
               {/* Grid of Activities */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activities.length === 0 ? (
                   <div className="col-span-full py-20 text-center text-slate-500 font-medium">
-                    No activities found.
+                    No events found.
                   </div>
                 ) : (
                   activities.map(activity => (
@@ -5988,8 +5993,8 @@ function App() {
                       onDelete={(id, name) => {
                         setDeleteModal({
                           isOpen: true,
-                          title: 'Delete Activity',
-                          message: `Are you sure you want to delete the activity "${name}"?`,
+                          title: 'Delete Event',
+                          message: `Are you sure you want to delete the event "${name}"?`,
                           onConfirm: async () => {
                             const success = await apiService.deleteActivity(id);
                             if (success) setActivities(prev => prev.filter(a => a.activity_id !== id));

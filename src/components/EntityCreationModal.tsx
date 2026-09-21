@@ -168,19 +168,19 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <CustomInput required name="title" placeholder="Activity Title" value={formData.title} onChange={handleChange} />
+              <CustomInput required name="title" placeholder="Event Title" value={formData.title} onChange={handleChange} />
             </div>
             <CustomSelect
               required
               name="activity_type"
-              placeholder="Activity Type"
+              placeholder="Event Type"
               value={formData.activity_type}
               onChange={handleChange}
               options={["General", "Academic", "Event", "Workshop", "Other"]}
             />
             <CustomInput required name="audience" placeholder="Audience (e.g., Everyone)" value={formData.audience} onChange={handleChange} />
             <div className="md:col-span-2 space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider ml-1">Activity Image</label>
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider ml-1">Event Image</label>
               <input
                 type="file"
                 accept="image/*"
@@ -205,7 +205,7 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
                 name="description"
                 value={formData.description || ''}
                 onChange={handleChange as any}
-                placeholder="Enter activity description"
+                placeholder="Enter event description"
                 className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 ${themeClasses.focusRingLight} hover:border-slate-300 dark:hover:border-slate-600 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 shadow-sm min-h-[100px]`}
               />
             </div>
