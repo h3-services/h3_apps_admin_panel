@@ -6300,22 +6300,24 @@ function App() {
                               {getGeofenceIcon(gf.name)}
                             </div>
                             <div className="flex items-center gap-1.5">
-                              {isGrouped && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (isGrouped) {
                                     setEditingGroupId(gf.id);
                                     setMergeTargetName(gf.name);
                                     setMergeTargetBatch(gf.targetBatch || 'ALL');
                                     setSelectedFencesToMerge(gf.zone_ids || []);
                                     setIsMergeModalOpen(true);
-                                  }}
-                                  className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-lg transition-all"
-                                  title="Edit Geofence Group"
-                                >
-                                  <Pencil size={13} />
-                                </button>
-                              )}
+                                  } else {
+                                    setEditingGeofenceGroup(gf);
+                                  }
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-lg transition-all"
+                                title="Edit Geofence"
+                              >
+                                <Pencil size={13} />
+                              </button>
                               <button
                                   onClick={(e) => {
                                     e.stopPropagation();

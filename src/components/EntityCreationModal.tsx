@@ -169,17 +169,17 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <CustomInput required name="title" placeholder="Event Title" value={formData.title} onChange={handleChange} />
+              <CustomInput required={!initialData} name="title" placeholder="Event Title" value={formData.title} onChange={handleChange} />
             </div>
             <CustomSelect
-              required
+              required={!initialData}
               name="activity_type"
               placeholder="Event Type"
               value={formData.activity_type}
               onChange={handleChange}
               options={["General", "Academic", "Event", "Workshop", "Other"]}
             />
-            <CustomInput required name="audience" placeholder="Audience (e.g., Everyone)" value={formData.audience} onChange={handleChange} />
+            <CustomInput required={!initialData} name="audience" placeholder="Audience (e.g., Everyone)" value={formData.audience} onChange={handleChange} />
             <div className="md:col-span-2 space-y-1.5">
               <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider ml-1">Event Image</label>
               <input
@@ -202,7 +202,7 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
             <div className="md:col-span-2 space-y-1.5">
               <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider ml-1">Description</label>
               <textarea
-                required
+                required={!initialData}
                 name="description"
                 value={formData.description || ''}
                 onChange={handleChange as any}
@@ -220,8 +220,8 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
               <h3 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2"><UserPlus size={16} className="text-purple-500" /> Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <CustomInput name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} />
-                <CustomInput required name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
-                <CustomInput required name="rollNo" placeholder="Roll Number / Student Code" value={formData.rollNo} onChange={handleChange} />
+                <CustomInput required={!initialData} name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
+                <CustomInput required={!initialData} name="rollNo" placeholder="Roll Number / Student Code" value={formData.rollNo} onChange={handleChange} />
                 <CustomInput name="date_of_birth" type="date" placeholder="Date of Birth" value={formData.date_of_birth} onChange={handleChange} />
                 <CustomSelect name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} options={["male", "female", "other"]} />
                 <CustomInput name="blood_group" placeholder="Blood Group (e.g. O+)" value={formData.blood_group} onChange={handleChange} />
@@ -334,18 +334,18 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
       case 'Parent':
         return (
           <div className="space-y-4">
-            <CustomInput required name="name" placeholder="Parent / Guardian Name" value={formData.name} onChange={handleChange} />
+            <CustomInput required={!initialData} name="name" placeholder="Parent / Guardian Name" value={formData.name} onChange={handleChange} />
             <CustomSelect
-              required
+              required={!initialData}
               name="relationship"
               placeholder="Relationship to Student"
               value={formData.relationship}
               onChange={handleChange}
               options={['Father', 'Mother', 'Legal Guardian', 'Other']}
             />
-            <CustomPhoneInput required name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
-            <CustomInput required name="childId" placeholder="Child's Student ID" value={formData.childId} onChange={handleChange} />
-            <CustomInput required name="occupation" placeholder="Occupation" value={formData.occupation} onChange={handleChange} />
+            <CustomPhoneInput required={!initialData} name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
+            <CustomInput required={!initialData} name="childId" placeholder="Child's Student ID" value={formData.childId} onChange={handleChange} />
+            <CustomInput required={!initialData} name="occupation" placeholder="Occupation" value={formData.occupation} onChange={handleChange} />
           </div>
         );
       case 'Donor':
@@ -388,17 +388,17 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
         return (
           <div className="space-y-4">
             <CustomSelect
-              required
+              required={!initialData}
               name="donor_type"
               placeholder="Donor Type"
               value={formData.donor_type || 'Individual'}
               onChange={handleChange}
               options={['Individual', 'Organization']}
             />
-            <CustomInput required name="name" placeholder={formData.donor_type === 'Organization' ? "Organization Name" : "Donor Name"} value={formData.name} onChange={handleChange} />
-            <CustomInput required name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
-            <CustomPhoneInput required name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
-            <CustomInput required name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
+            <CustomInput required={!initialData} name="name" placeholder={formData.donor_type === 'Organization' ? "Organization Name" : "Donor Name"} value={formData.name} onChange={handleChange} />
+            <CustomInput required={!initialData} name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
+            <CustomPhoneInput required={!initialData} name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
+            <CustomInput required={!initialData} name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
 
             {initialData && (
               <div className="space-y-1.5">
@@ -451,10 +451,10 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <CustomInput required name="name" placeholder="Admin Name" value={formData.name} onChange={handleChange} />
+              <CustomInput required={!initialData} name="name" placeholder="Admin Name" value={formData.name} onChange={handleChange} />
             </div>
-            <CustomInput required name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
-            <CustomPhoneInput required name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
+            <CustomInput required={!initialData} name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
+            <CustomPhoneInput required={!initialData} name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
             {isSuperAdmin && (
               <CustomSelect
                 name="role"
@@ -470,13 +470,13 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <CustomInput required name="name" placeholder="Volunteer Name" value={formData.name} onChange={handleChange} />
+              <CustomInput required={!initialData} name="name" placeholder="Volunteer Name" value={formData.name} onChange={handleChange} />
             </div>
-            <CustomInput required name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
-            <CustomPhoneInput required name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
-            <CustomInput required name="specialization" placeholder="Specialization (e.g., Mentorship, IT)" value={formData.specialization} onChange={handleChange} />
+            <CustomInput required={!initialData} name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
+            <CustomPhoneInput required={!initialData} name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} onCountryCodeChange={(e: any) => setFormData({...formData, countryCode: e.target.value})} countryCodeValue={formData.countryCode} />
+            <CustomInput required={!initialData} name="specialization" placeholder="Specialization (e.g., Mentorship, IT)" value={formData.specialization} onChange={handleChange} />
             <CustomSelect
-              required
+              required={!initialData}
               name="availability"
               placeholder="Availability"
               value={formData.availability}
