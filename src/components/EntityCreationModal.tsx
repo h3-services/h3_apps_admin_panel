@@ -84,6 +84,7 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
   const [formData, setFormData] = useState<any>(initialData || {});
   const [showStudentGrid, setShowStudentGrid] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
 
   const toggleStudentLink = (studentId: string) => {
     const current = formData.linkedStudentIds || [];
@@ -400,9 +401,38 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
             <CustomInput required name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
 
             {initialData && (
-              <div className="grid grid-cols-2 gap-4">
-                <CustomInput name="amount_inr" type="number" placeholder="Contributed (INR)" value={formData.amount_inr} onChange={handleChange} />
-                <CustomInput name="amount_usd" type="number" placeholder="Contributed (USD)" value={formData.amount_usd} onChange={handleChange} />
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider ml-1 mb-1 block">Contributed</label>
+                <div className="flex gap-2">
+                  <div className="relative">
+                    <select
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value as 'USD' | 'INR')}
+                      className={`w-[85px] pl-4 pr-8 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-bold text-slate-900 dark:text-white appearance-none text-left cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
+                    >
+                      <option value="INR">INR</option>
+                      <option value="USD">USD</option>
+                    </select>
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                  </div>
+                  <div className="relative flex-1 flex items-center bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500/50 focus-within:bg-white dark:focus-within:bg-slate-900 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                    <div className="absolute left-0 inset-y-0 flex items-center">
+                      <div className="h-full py-0 pl-4 pr-3 flex items-center bg-transparent text-slate-600 dark:text-slate-300 font-bold text-sm border-r border-slate-200/80 dark:border-slate-700/50 rounded-l-xl">
+                        {currency === 'USD' ? '$' : '₹'}
+                      </div>
+                    </div>
+                    <input
+                      type="number"
+                      name={currency === 'USD' ? 'amount_usd' : 'amount_inr'}
+                      value={currency === 'USD' ? formData.amount_usd || '' : formData.amount_inr || ''}
+                      onChange={handleChange}
+                      placeholder={currency === 'USD' ? "Contributed (USD)" : "Contributed (INR)"}
+                      className="w-full pl-[45px] pr-4 py-3.5 bg-transparent outline-none text-sm font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+                    />
+                  </div>
+                </div>
               </div>
             )}
             
