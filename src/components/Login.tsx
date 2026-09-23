@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Users, Heart, BarChart3, BookOpen, Phone, Lock, EyeOff, Eye, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Users, Heart, BarChart3, BookOpen, Mail, Lock, EyeOff, Eye, ArrowRight } from 'lucide-react';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 
@@ -122,25 +122,25 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
                     <span className="text-[11px] text-slate-400 font-medium">Track Progress</span>
                 </div>
                 {/* Card 2 */}
-                <div className="bg-[#f0fdf4] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-green-100/50">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#dcfce7]/50">
-                        <Heart className="text-[#16a34a]" size={22} />
+                <div className="bg-[#f0f7ff] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-blue-100/50">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#e0efff]/50">
+                        <Heart className="text-[#0d6efd]" size={22} />
                     </div>
                     <span className="font-bold text-[13px] text-slate-800 mb-0.5">Donors</span>
                     <span className="text-[11px] text-slate-400 font-medium">Build Relationships</span>
                 </div>
                 {/* Card 3 */}
-                <div className="bg-[#f5f3ff] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-purple-100/50">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#ede9fe]/50">
-                        <BarChart3 className="text-[#7c3aed]" size={22} fill="currentColor" />
+                <div className="bg-[#f0f7ff] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-blue-100/50">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#e0efff]/50">
+                        <BarChart3 className="text-[#0d6efd]" size={22} fill="currentColor" />
                     </div>
                     <span className="font-bold text-[13px] text-slate-800 mb-0.5">Contributions</span>
                     <span className="text-[11px] text-slate-400 font-medium">Ensure Transparency</span>
                 </div>
                 {/* Card 4 */}
-                <div className="bg-[#fffbeb] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-yellow-100/50">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#fef3c7]/50">
-                        <BookOpen className="text-[#d97706]" size={22} fill="currentColor" />
+                <div className="bg-[#f0f7ff] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-blue-100/50">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#e0efff]/50">
+                        <BookOpen className="text-[#0d6efd]" size={22} fill="currentColor" />
                     </div>
                     <span className="font-bold text-[13px] text-slate-800 mb-0.5">Programs</span>
                     <span className="text-[11px] text-slate-400 font-medium">Create Opportunities</span>
@@ -199,12 +199,12 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
 
             <form className="space-y-4.5" onSubmit={(e) => e.preventDefault()}>
                 <div>
-                    <label className="block text-[13px] font-bold text-slate-700 mb-2">Phone Number</label>
+                    <label className="block text-[13px] font-bold text-slate-700 mb-2">Email Address</label>
                     <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input 
-                            type="text" 
-                            placeholder="Enter your phone number" 
+                            type="email" 
+                            placeholder="Enter your email address" 
                             className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/20 focus:border-[#0d6efd] text-[14px] transition-all bg-white placeholder:text-slate-400"
                         />
                     </div>
@@ -222,9 +222,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                     </div>
-                    <div className="flex justify-end mt-2">
-                        <a href="#" className="text-[13px] text-[#0d6efd] font-bold hover:underline">Forgot Password?</a>
-                    </div>
+
                 </div>
 
                 <button type="button" className="w-full py-3.5 bg-[#062A78] hover:bg-[#05205c] text-white rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 transition-colors mt-2">
