@@ -140,12 +140,12 @@ export const ContributionModal: React.FC<ContributionModalProps> = ({ isOpen, on
       <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-slate-800">
         <div className="sticky top-0 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl px-6 sm:px-7 py-5 border-b border-slate-100 dark:border-slate-800/80 flex justify-between items-center rounded-t-3xl shadow-sm relative overflow-hidden">
           {/* Subtle Ambient Glow */}
-          <div className="absolute -top-10 -left-10 w-36 h-36 bg-[#062A78]/10 dark:bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="absolute -top-10 -left-10 w-36 h-36 bg-[#2596be]/10 dark:bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
           <div className="flex items-center gap-3.5 relative z-10">
             {/* Modern Icon Badge */}
             <div className="relative shrink-0">
-              <div className={`w-12 h-12 rounded-2xl ${themeClasses.bgGradientMain} text-white flex items-center justify-center shadow-lg shadow-[#062A78]/25 ring-4 ring-[#062A78]/10 dark:ring-blue-400/15`}>
+              <div className={`w-12 h-12 rounded-2xl ${themeClasses.bgGradientMain} text-white flex items-center justify-center shadow-lg shadow-[#2596be]/25 ring-4 ring-[#2596be]/10 dark:ring-blue-400/15`}>
                 <Receipt size={22} className="text-white" strokeWidth={2.2} />
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900 shadow-sm"></div>
@@ -234,7 +234,7 @@ export const ContributionModal: React.FC<ContributionModalProps> = ({ isOpen, on
                     </select>
                     <ChevronDown size={16} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   </div>
-                  <div className="relative flex-1 flex items-center bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 focus-within:ring-[#062A78]/40 focus-within:border-[#062A78]">
+                  <div className="relative flex-1 flex items-center bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 focus-within:ring-[#2596be]/40 focus-within:border-[#2596be]">
                     <div className="absolute left-0 inset-y-0 flex items-center">
                       <div className="h-full py-0 pl-4 pr-3 flex items-center bg-transparent text-slate-600 dark:text-slate-300 font-bold text-sm border-r border-slate-200 dark:border-slate-700/50 rounded-l-xl">
                         {currency === 'USD' ? '$' : '₹'}
@@ -311,7 +311,7 @@ export const ContributionModal: React.FC<ContributionModalProps> = ({ isOpen, on
                     setFormData(prev => ({ ...prev, donorId: '' }));
                   }
                 }}
-                className="w-4 h-4 text-[#20002c] rounded border-gray-300 focus:ring-[#062A78]"
+                className="w-4 h-4 text-[#20002c] rounded border-gray-300 focus:ring-[#2596be]"
               />
               <label htmlFor="anonymous" className="text-sm font-bold text-slate-700 dark:text-slate-300 select-none cursor-pointer">
                 Anonymous Donation (No donor info required, no receipt sent)
