@@ -148,41 +148,56 @@ export const apiService = {
 
   // Fetch Students
   getStudents: async (includeDeleted: boolean = false): Promise<Student[]> => {
-    const data = await apiFetch<any[]>('/api/v1/students/', []);
+    const [data, usersData] = await Promise.all([
+      apiFetch<any[]>('/api/v1/students/', []),
+      apiFetch<any[]>('/api/v1/users/?limit=10000', [])
+    ]);
     if (!data || data.length === 0) return [];
     const activeData = includeDeleted ? data : data.filter((item: any) => item.is_deleted !== 1);
     
+    const userMap: Record<string, any> = {};
+    if (Array.isArray(usersData)) {
+      usersData.forEach(u => {
+        if (u.user_id) userMap[u.user_id] = u;
+      });
+    }
+    
     // Map backend response fields to Student type
-    return activeData.map((item, idx) => ({
-      ...item,
-      id: item.student_id || item.id || item.student_code || `STU${idx + 1}`,
-      name: item.student_name || item.full_name || item.name || (item.first_name ? `${item.first_name || ''} ${item.last_name || ''}`.trim() : 'N/A'),
-      rollNo: item.student_code || 'N/A',
-      age: item.age || null,
-      gender: item.gender || 'N/A',
-      batch: item.batch || item.current_year || item.year || (item.grade && item.grade.includes('2nd Year') ? '2026' : item.grade && item.grade.includes('3rd Year') ? '2025' : 'N/A'),
-      grade: item.year || item.grade || item.class || 'N/A',
-      college: item.college || item.school_name || item.college_name || 'N/A',
-      course: (item.course && item.major) ? `${item.course} (${item.major})` : (item.course || item.major || 'N/A'),
-      hostelRoom: item.hostel_room || 'N/A',
-      parentName: item.father_name || item.mother_name || item.guardian_name || item.parent_name || 'N/A',
-      parentPhone: item.father_contact_number || item.mother_contact_number || item.emergency_contact || 'N/A',
-      attendance: item.attendance || null,
-      avatar: formatAvatarUrl(item.profile_photo_link || item.profile_photo_url || item.avatar),
-      location: {
-        status: item.location_status || 'N/A',
-        lastUpdated: item.last_updated || 'N/A',
-        coordinates: item.coordinates || '',
-        hostelDistance: '',
-        collegeDistance: ''
-      },
-      leaveRequests: item.leave_requests || [],
-      academicProgress: item.academic_progress || [],
-      achievements: item.achievements || [],
-      is_deleted: item.is_deleted,
-      subjects: item.subjects || [],
-      notes: item.notes || []
-    }));
+    return activeData.map((item, idx) => {
+      const user = userMap[item.user_id] || {};
+      return {
+        ...item,
+        id: item.student_id || item.id || item.student_code || `STU${idx + 1}`,
+        name: user.user_name || item.student_name || item.full_name || item.name || (item.first_name ? `${item.first_name || ''} ${item.last_name || ''}`.trim() : 'N/A'),
+        email: user.user_email || item.email || '',
+        phone: user.user_phone || item.phone || '',
+        rollNo: item.student_code || 'N/A',
+        age: item.age || null,
+        gender: item.gender || 'N/A',
+        batch: item.batch || item.current_year || item.year || (item.grade && item.grade.includes('2nd Year') ? '2026' : item.grade && item.grade.includes('3rd Year') ? '2025' : 'N/A'),
+        grade: item.year || item.grade || item.class || 'N/A',
+        college: item.college || item.school_name || item.college_name || 'N/A',
+        course: (item.course && item.major) ? `${item.course} (${item.major})` : (item.course || item.major || 'N/A'),
+        hostelRoom: item.hostel_room || 'N/A',
+        parentName: item.father_name || item.mother_name || item.guardian_name || item.parent_name || 'N/A',
+        parentPhone: item.father_contact_number || item.mother_contact_number || item.emergency_contact || 'N/A',
+        attendance: item.attendance || null,
+        avatar: formatAvatarUrl(item.profile_photo_link || item.profile_photo_url || item.avatar),
+        location: {
+          status: item.location_status || 'N/A',
+          lastUpdated: item.last_updated || 'N/A',
+          coordinates: item.coordinates || '',
+          hostelDistance: '',
+          collegeDistance: ''
+        },
+        leaveRequests: item.leave_requests || [],
+        academicProgress: item.academic_progress || [],
+        achievements: item.achievements || [],
+        is_deleted: item.is_deleted,
+        subjects: item.subjects || [],
+        notes: item.notes || []
+      };
+    });
   },
 
   // Fetch Volunteers

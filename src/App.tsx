@@ -1654,6 +1654,14 @@ function App() {
     const loadingToast = toast.loading(`${isEdit ? 'Updating' : 'Creating'} ${type}...`);
     try {
       if (type === 'Student') {
+      let dob = data.date_of_birth || "2000-01-01";
+      if (dob.includes("/")) {
+        const parts = dob.split("/");
+        if (parts.length === 3 && parts[2].length === 4) {
+          dob = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+        }
+      }
+
       const payload = {
         name: data.name || data.student_name || 'New Student',
         email: data.email || '',
@@ -1662,7 +1670,7 @@ function App() {
         student_code: data.rollNo || data.student_code || `STU_${Date.now()}`,
         school_name: data.school_name || data.college || 'Government College',
         college: data.college || 'Government College',
-        date_of_birth: data.date_of_birth || "2000-01-01",
+        date_of_birth: dob,
         gender: data.gender || "other",
         address: data.address || "Not specified",
         city: data.city || "Not specified",
