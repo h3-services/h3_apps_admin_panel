@@ -818,6 +818,8 @@ export const apiService = {
         body: JSON.stringify(payload),
       });
       if (res.ok) return await res.json();
+      const errBody = await res.text();
+      console.error("422 Error body:", errBody);
       return null;
     } catch (err) {
       console.error("Error updating student:", err);

@@ -1723,7 +1723,7 @@ function App() {
         remarks: data.remarks || "",
         folder_link: data.folder_link || "",
         currently_working: Number(data.currently_working) || 0,
-        location: data.location || "",
+        location: typeof data.location === 'string' ? data.location : "",
         designation: data.designation || "",
         is_married: Number(data.is_married) || 0,
         are_you_on_track: Number(data.are_you_on_track) || 0,
@@ -1735,7 +1735,8 @@ function App() {
         user_id: data.user_id || "00000000-0000-0000-0000-000000000000"
       };
       if (isEdit && editId) {
-        await apiService.updateStudent(editId, payload);
+        const res = await apiService.updateStudent(editId, payload);
+        if (!res) throw new Error("Validation or server error occurred");
         if (selectedStudent && (selectedStudent.id === editId || (selectedStudent as any).student_id === editId)) {
           setSelectedStudent({ ...selectedStudent, ...payload });
         }
