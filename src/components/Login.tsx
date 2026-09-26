@@ -104,7 +104,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
                 <p className="text-xs font-bold text-slate-400 tracking-[0.2em] uppercase">Sign in to continue</p>
                 <h1 className="text-[3.5rem] leading-[1.1] font-extrabold tracking-tight text-[#1a2b49]">
                     Together for <br />
-                    <span className="text-[#0d6efd]">Brighter Tomorrows.</span>
+                    <span className="text-[#062A78]">Brighter Tomorrows.</span>
                 </h1>
                 <p className="text-[17px] text-slate-500 mt-6 leading-relaxed max-w-[500px] font-medium">
                     Manage students, donors, contributions and programs — all in one place. Empowering communities through education, support and opportunities.
@@ -116,7 +116,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
                 {/* Card 1 */}
                 <div className="bg-[#f0f7ff] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-blue-100/50">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#e0efff]/50">
-                        <Users className="text-[#0d6efd]" size={22} fill="currentColor" />
+                        <Users className="text-[#062A78]" size={22} fill="currentColor" />
                     </div>
                     <span className="font-bold text-[13px] text-slate-800 mb-0.5">Students</span>
                     <span className="text-[11px] text-slate-400 font-medium">Track Progress</span>
@@ -124,7 +124,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
                 {/* Card 2 */}
                 <div className="bg-[#f0f7ff] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-blue-100/50">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#e0efff]/50">
-                        <Heart className="text-[#0d6efd]" size={22} />
+                        <Heart className="text-[#062A78]" size={22} />
                     </div>
                     <span className="font-bold text-[13px] text-slate-800 mb-0.5">Donors</span>
                     <span className="text-[11px] text-slate-400 font-medium">Build Relationships</span>
@@ -132,7 +132,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
                 {/* Card 3 */}
                 <div className="bg-[#f0f7ff] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-blue-100/50">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#e0efff]/50">
-                        <BarChart3 className="text-[#0d6efd]" size={22} fill="currentColor" />
+                        <BarChart3 className="text-[#062A78]" size={22} fill="currentColor" />
                     </div>
                     <span className="font-bold text-[13px] text-slate-800 mb-0.5">Contributions</span>
                     <span className="text-[11px] text-slate-400 font-medium">Ensure Transparency</span>
@@ -140,7 +140,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
                 {/* Card 4 */}
                 <div className="bg-[#f0f7ff] rounded-2xl p-5 flex flex-col items-center text-center shadow-sm border border-blue-100/50">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-[#e0efff]/50">
-                        <BookOpen className="text-[#0d6efd]" size={22} fill="currentColor" />
+                        <BookOpen className="text-[#062A78]" size={22} fill="currentColor" />
                     </div>
                     <span className="font-bold text-[13px] text-slate-800 mb-0.5">Programs</span>
                     <span className="text-[11px] text-slate-400 font-medium">Create Opportunities</span>
@@ -170,7 +170,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
 
         {/* Right Header Link */}
         <div className="absolute top-10 right-12 z-20 flex items-center gap-3 text-[13px] font-semibold text-slate-500 hidden lg:flex">
-            <div className="w-5 h-0.5 bg-[#0d6efd] rounded-full"></div>
+            <div className="w-5 h-0.5 bg-[#062A78] rounded-full"></div>
             Foundation Admin Portal
         </div>
 
@@ -205,7 +205,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
                         <input 
                             type="email" 
                             placeholder="Enter your email address" 
-                            className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/20 focus:border-[#0d6efd] text-[14px] transition-all bg-white placeholder:text-slate-400"
+                            className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#062A78]/20 focus:border-[#062A78] text-[14px] transition-all bg-white placeholder:text-slate-400"
                         />
                     </div>
                 </div>
@@ -216,7 +216,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
                         <input 
                             type={showPassword ? "text" : "password"} 
                             placeholder="Enter your password" 
-                            className="w-full pl-11 pr-10 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]/20 focus:border-[#0d6efd] text-[14px] transition-all bg-white placeholder:text-slate-400"
+                            className="w-full pl-11 pr-10 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#062A78]/20 focus:border-[#062A78] text-[14px] transition-all bg-white placeholder:text-slate-400"
                         />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -259,7 +259,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
             </button>
 
             <div className="mt-8 text-center text-[13px] text-slate-500 font-medium">
-                Need access? <a href="#" className="text-[#0d6efd] hover:underline font-semibold ml-1">Contact Administrator</a>
+                Need access? <a href="#" className="text-[#062A78] hover:underline font-semibold ml-1">Contact Administrator</a>
             </div>
         </div>
       </div>

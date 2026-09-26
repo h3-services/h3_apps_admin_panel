@@ -12,18 +12,17 @@
   --color-glass-border: rgba(255, 255, 255, 0.85);
 
   /* Vibrant, polished custom palette centered around #BBDCE5 */
-  --color-blue-50: #f4f9fa;
-  --color-blue-100: #e3f0f4;
-  --color-blue-200: #BBDCE5;
-  --color-blue-300: #93c8d6;
-  --color-blue-400: #6ab3c7;
-  --color-blue-500: #429fb8;
-  --color-blue-600: #BBDCE5;
-  /* Replaced the old 600 with the requested secondary color */
-  --color-blue-700: #357f93;
-  --color-blue-800: #285f6e;
-  --color-blue-900: #1a404a;
-  --color-blue-950: #0d2025;
+  --color-blue-50: #edf3ff;
+  --color-blue-100: #dce7ff;
+  --color-blue-200: #bfd4ff;
+  --color-blue-300: #93b9ff;
+  --color-blue-400: #5f93ff;
+  --color-blue-500: #062A78;
+  --color-blue-600: #05205c;
+  --color-blue-700: #041641;
+  --color-blue-800: #020b25;
+  --color-blue-900: #010512;
+  --color-blue-950: #00020a;
 
   /* Fresh Emerald Green secondary palette matching hope3-services website */
   --color-emerald-50: #f4f9fa;
@@ -211,8 +210,8 @@ body,
 /* Custom Gradient for Buttons and Tabs */
 .gradient-btn-tab {
   background: #20002c !important;
-  background: #2596be !important;
-  background: #2596be !important;
+  background: #062A78 !important;
+  background: #062A78 !important;
   color: white !important;
   border: none !important;
 }

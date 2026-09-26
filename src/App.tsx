@@ -185,7 +185,7 @@ const ActivityCardNode = ({ activity, setViewingActivityImages, onDelete }: { ac
   };
 
   return (
-    <div className="glass-panel rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-lg hover:shadow-[#2596be]/20 hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+    <div className="glass-panel rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-lg hover:shadow-[#062A78]/20 hover:-translate-y-1 transition-all duration-300 group flex flex-col">
       {activity.images && activity.images.length > 0 ? (
         <div 
           className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 cursor-pointer group/carousel"
@@ -296,7 +296,7 @@ const ProfileAvatar = ({ url, name, className, fallbackClassName }: { url?: stri
   );
 };
 
-const AchievementImage = ({ url, className = "w-12 h-12 object-contain rounded-lg shrink-0", fallbackClassName = "w-12 h-12 rounded-lg bg-[#2596be]/20 flex items-center justify-center shrink-0" }: { url: string, className?: string, fallbackClassName?: string }) => {
+const AchievementImage = ({ url, className = "w-12 h-12 object-contain rounded-lg shrink-0", fallbackClassName = "w-12 h-12 rounded-lg bg-[#062A78]/20 flex items-center justify-center shrink-0" }: { url: string, className?: string, fallbackClassName?: string }) => {
   const [error, setError] = useState(false);
   const parsedUrl = getDriveImageUrl(url);
 
@@ -436,7 +436,7 @@ function App() {
   const [isFullScreenMapOpen, setIsFullScreenMapOpen] = useState<boolean>(false);
   const [newZoneName, setNewZoneName] = useState<string>('');
   const [newZoneShape, setNewZoneShape] = useState<'polygon' | 'pentagon' | 'hexagon' | 'circle'>('pentagon');
-  const [newZoneColor, setNewZoneColor] = useState<string>('#2596be');
+  const [newZoneColor, setNewZoneColor] = useState<string>('#062A78');
   const [newZoneTargetBatch, setNewZoneTargetBatch] = useState<string>('ALL');
   const [selectedBatchFilter, setSelectedBatchFilter] = useState<string>('ALL');
   const [selectedGeofenceFilter, setSelectedGeofenceFilter] = useState<string>('ALL');
@@ -469,7 +469,7 @@ function App() {
       id: '06d77b3b-bf43-4bbc-b841-ed68db46665b',
       name: 'Hope3 Office Polygon',
       shape: 'polygon',
-      color: '#2596be',
+      color: '#062A78',
       targetBatch: 'ALL',
       lat: 10.0815515,
       lng: 78.7463343,
@@ -765,7 +765,7 @@ function App() {
             ];
           }
 
-          const colors = ['#ef4444', '#10b981', '#2596be', '#a855f7', '#f59e0b', '#ec4899'];
+          const colors = ['#ef4444', '#10b981', '#062A78', '#a855f7', '#f59e0b', '#ec4899'];
           const color = colors[idx % colors.length];
 
           mappedGeofences.push({
@@ -1117,8 +1117,8 @@ function App() {
               showArea: true,
               guidelineDistance: 10,
               shapeOptions: {
-                color: '#2596be',
-                fillColor: '#2596be',
+                color: '#062A78',
+                fillColor: '#062A78',
                 fillOpacity: 0.35,
                 weight: 3
               }
@@ -2789,8 +2789,8 @@ function App() {
                             {/* Grid lines */}
                             <defs>
                               <linearGradient id="costsGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#2596be" stopOpacity="0.4" />
-                                <stop offset="100%" stopColor="#2596be" stopOpacity="0" />
+                                <stop offset="0%" stopColor="#062A78" stopOpacity="0.4" />
+                                <stop offset="100%" stopColor="#062A78" stopOpacity="0" />
                               </linearGradient>
                               <clipPath id="chart-sweep-dashboard">
                                 <motion.rect x="0" y="0" width="600" height="580" initial={{ width: 0 }} animate={{ width: 600 }} transition={{ duration: 1.5, ease: "easeOut" }} />
@@ -2805,7 +2805,7 @@ function App() {
                             <path d={costPolygonPath} fill="url(#costsGrad)" clipPath="url(#chart-sweep-dashboard)" />
 
                             {/* Chart Lines */}
-                            <path d={costPath} fill="none" stroke="#2596be" strokeWidth="3" vectorEffect="non-scaling-stroke" className="drop-shadow-sm" clipPath="url(#chart-sweep-dashboard)" />
+                            <path d={costPath} fill="none" stroke="#062A78" strokeWidth="3" vectorEffect="non-scaling-stroke" className="drop-shadow-sm" clipPath="url(#chart-sweep-dashboard)" />
 
                             {/* Data Points */}
                             {costPoints.map((p, i) => (
@@ -3017,7 +3017,7 @@ function App() {
                               <div className="flex justify-between items-start">
                                 <div>
                                   <h5 className="font-bold text-xs">{req.studentName}</h5>
-                                  <span className="text-[9px] font-semibold text-slate-800 dark:text-purple-400 font-mono">{req.type}</span>
+                                  <span className="text-[9px] font-semibold text-slate-800 dark:text-blue-400 font-mono">{req.type}</span>
                                 </div>
                                 <span className="text-[10px] text-slate-400">{req.date}</span>
                               </div>
@@ -3131,7 +3131,7 @@ function App() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-400">Weekly GPAs:</span>
-                          <span className="font-bold text-slate-800 dark:text-purple-400">9.1/10 (Excellent)</span>
+                          <span className="font-bold text-slate-800 dark:text-blue-400">9.1/10 (Excellent)</span>
                         </div>
                       </div>
                     </div>
@@ -3141,11 +3141,11 @@ function App() {
                         <p className="text-[11px] text-slate-400">Reach out to your child's guide counselor directly</p>
                       </div>
                       <div className="p-4 border border-slate-200/50 dark:border-slate-800/50 rounded-xl bg-white dark:bg-slate-900/30 flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 flex items-center justify-center font-bold">AS</div>
+                        <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold">AS</div>
                         <div>
                           <h5 className="font-bold text-xs text-white">Prof. Ananya Sen</h5>
                           <span className="text-[10px] text-slate-400 block">Senior Mentor Counselor</span>
-                          <span className="text-[10px] text-slate-800 dark:text-purple-400 block mt-1 font-mono">ananya.sen@hope3.org</span>
+                          <span className="text-[10px] text-slate-800 dark:text-blue-400 block mt-1 font-mono">ananya.sen@hope3.org</span>
                         </div>
                       </div>
                     </div>
@@ -3173,8 +3173,18 @@ function App() {
                       <h4 className="font-bold text-base">Student Database</h4>
                       <p className="text-xs text-slate-400">Total {students.length} students enrolled in active programs</p>
                     </div>
-
-
+                    
+                    {/* Search / Filter */}
+                    <div className="relative w-full sm:w-72">
+                      <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                      <input
+                        type="text"
+                        placeholder="Search students..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-violet-600 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+                      />
+                    </div>
                   </div>
 
                   {/* DATA TABLE */}
@@ -3185,7 +3195,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>Student</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'name': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200">
+                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'name': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 {Array.from(new Set(students.map(s => s.name).filter(Boolean))).sort().map(n => <option key={n} value={n}>{n}</option>)}
                               </select>
@@ -3200,7 +3210,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>Batch</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'batch': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200">
+                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'batch': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 {availableBatches.map(b => <option key={b} value={b}>Batch {b}</option>)}
                               </select>
@@ -3209,7 +3219,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>Course</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'course': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200">
+                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'course': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 {Array.from(new Set(students.map(s => (s.course && s.course !== 'N/A') ? s.course : (s.grade && s.grade !== 'N/A' ? s.grade.replace(/\s*-\s*\d+[a-zA-Z]{2}\s*Year\s*/i, ' ').trim() : '')).filter(c => Boolean(c) && c !== 'N/A'))).sort().map(c => <option key={c} value={c}>{c}</option>)}
                               </select>
@@ -3218,7 +3228,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>College Name</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'college': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200">
+                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'college': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 {Array.from(new Set(students.map(s => s.college).filter(Boolean))).sort().map(c => <option key={c} value={c}>{c}</option>)}
                               </select>
@@ -3227,7 +3237,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>Status</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'status': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200">
+                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'status': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
@@ -3258,7 +3268,7 @@ function App() {
                             </td>
                             <td className="p-4 font-mono font-medium text-black/70 dark:text-white/70">{student.rollNo}</td>
                             <td className="p-4">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold font-mono ${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white border border-[#2596be]/20 dark:border-[#2596be]/80`}>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold font-mono ${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white border border-[#062A78]/20 dark:border-[#062A78]/80`}>
                                 {student.batch || student.current_year || (student.grade && student.grade.includes('2nd Year') ? '2026' : student.grade && student.grade.includes('3rd Year') ? '2025' : '2024')}
                               </span>
                             </td>
@@ -3292,7 +3302,7 @@ function App() {
                                   target="_blank" 
                                   rel="noreferrer"
                                   title={`Call ${student.name} / Parent via WhatsApp (${student.parentPhone})`}
-                                  className={`p-2.5 ${themeClasses.bgGradientMain} hover:opacity-90 text-white rounded-[1rem] shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-[#2596be]/50 flex items-center justify-center`}
+                                  className={`p-2.5 ${themeClasses.bgGradientMain} hover:opacity-90 text-white rounded-[1rem] shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-[#062A78]/50 flex items-center justify-center`}
                                 >
                                   <PhoneCall size={14} />
                                 </a>
@@ -3303,7 +3313,7 @@ function App() {
                                   target="_blank" 
                                   rel="noreferrer"
                                   title={`Message ${student.name} / Parent on WhatsApp (${student.parentPhone})`}
-                                  className={`p-2.5 ${themeClasses.bgGradientMain} hover:opacity-90 text-white rounded-[1rem] shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-[#2596be]/50 flex items-center justify-center`}
+                                  className={`p-2.5 ${themeClasses.bgGradientMain} hover:opacity-90 text-white rounded-[1rem] shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all outline-none focus:ring-2 focus:ring-[#062A78]/50 flex items-center justify-center`}
                                 >
                                   <MessageSquare size={14} />
                                 </a>
@@ -3345,7 +3355,7 @@ function App() {
                     <div className="absolute top-4 right-4 flex items-center gap-2">
                       <button
                         onClick={() => setCreationModal({ type: 'Student', isOpen: true, isEdit: true, initialData: selectedStudent })}
-                        className="px-3 py-1.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 transition-colors text-xs font-bold uppercase tracking-wider"
+                        className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 transition-colors text-xs font-bold uppercase tracking-wider"
                       >
                         Edit
                       </button>
@@ -3376,10 +3386,10 @@ function App() {
 
                         {/* Basic badges */}
                         <div className="flex gap-2 mt-3 flex-wrap">
-                          <span className="text-[10px] font-semibold bg-purple-50 dark:bg-purple-950/20 text-slate-800 dark:text-purple-400 px-2 py-0.5 rounded border border-purple-200/30">
+                          <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/20 text-slate-800 dark:text-blue-400 px-2 py-0.5 rounded border border-blue-200/30">
                             Hostel Room: {selectedStudent.hostelRoom || (selectedStudent as any).hostel_room || 'N/A'}
                           </span>
-                          <span className="text-[10px] font-semibold bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded border border-purple-200/30">
+                          <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded border border-blue-200/30">
                             GPA: {selectedStudent.academicProgress && selectedStudent.academicProgress.length > 0 ? selectedStudent.academicProgress[selectedStudent.academicProgress.length - 1]?.gpa ?? 'N/A' : 'N/A'}
                           </span>
                         </div>
@@ -3392,13 +3402,13 @@ function App() {
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block w-full">Simulate Check-in:</span>
                         <button
                           onClick={() => handleSimulateLocationUpdate(selectedStudent.id, 'In Hostel')}
-                          className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-purple-200/50 text-purple-600 hover:bg-purple-50 transition-colors"
+                          className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-blue-200/50 text-blue-600 hover:bg-blue-50 transition-colors"
                         >
                           Hostel
                         </button>
                         <button
                           onClick={() => handleSimulateLocationUpdate(selectedStudent.id, 'In College')}
-                          className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-purple-200/50 text-slate-800 hover:bg-purple-50 transition-colors"
+                          className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-blue-200/50 text-slate-800 hover:bg-blue-50 transition-colors"
                         >
                           College
                         </button>
@@ -3420,7 +3430,7 @@ function App() {
                         onClick={() => setProfileTab(tab)}
                         className={`px-4 py-2 font-bold text-xs shrink-0 border-b-2 transition-all duration-200
                           ${profileTab === tab
-                            ? 'border-violet-600 text-slate-800 dark:text-purple-400'
+                            ? 'border-violet-600 text-slate-800 dark:text-blue-400'
                             : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
                       >
                         {tab}
@@ -3441,7 +3451,7 @@ function App() {
                           {/* Card 1: Personal Profile */}
                           <div className="glass-panel rounded-2xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 p-5 space-y-4">
                             <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
-                              <User size={16} className="text-purple-500" />
+                              <User size={16} className="text-blue-500" />
                               Personal Information
                             </h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -3483,7 +3493,7 @@ function App() {
                           {/* Card 2: Academic & School/College Info */}
                           <div className="glass-panel rounded-2xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 p-5 space-y-4 lg:col-span-2">
                             <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
-                              <Award size={16} className="text-purple-500" />
+                              <Award size={16} className="text-blue-500" />
                               Academic & Education Details
                             </h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
@@ -3574,7 +3584,7 @@ function App() {
                           {/* Card 4: Address & Residential Location */}
                           <div className="glass-panel rounded-2xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 p-5 space-y-4">
                             <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
-                              <FileText size={16} className="text-purple-500" />
+                              <FileText size={16} className="text-blue-500" />
                               Address & Residential Details
                             </h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -3664,7 +3674,7 @@ function App() {
                               {selectedStudent.folder_link && (
                                 <div className="sm:col-span-2">
                                   <span className="text-slate-400 block font-semibold text-[10px] uppercase">Google Drive Folder</span>
-                                  <a href={selectedStudent.folder_link} target="_blank" rel="noreferrer" className="text-slate-800 dark:text-purple-400 font-semibold underline truncate block">
+                                  <a href={selectedStudent.folder_link} target="_blank" rel="noreferrer" className="text-slate-800 dark:text-blue-400 font-semibold underline truncate block">
                                     {selectedStudent.folder_link}
                                   </a>
                                 </div>
@@ -3683,7 +3693,7 @@ function App() {
                         {/* 4. TRACKING, VOLUNTEERING & NOTES */}
                         <div className="glass-panel rounded-2xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 p-5 space-y-4">
                           <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
-                            <Clock size={16} className="text-purple-500" />
+                            <Clock size={16} className="text-blue-500" />
                             Tracking, Emergency & Notes
                           </h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
@@ -3732,7 +3742,7 @@ function App() {
                                 cy="50"
                                 r="40"
                                 fill="transparent"
-                                stroke="#2596be"
+                                stroke="#062A78"
                                 strokeWidth="8"
                                 strokeDasharray={2 * Math.PI * 40}
                                 strokeDashoffset={2 * Math.PI * 40 * (1 - selectedStudent.attendance / 100)}
@@ -3851,10 +3861,10 @@ function App() {
                                         </a>
                                       )}
                                       {req.submitted_marksheets === 1 && (
-                                        <span className={`text-[10px] font-bold text-slate-700 ${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.textPrimaryLight} border border-[#2596be]/40 px-3 py-1 rounded-full inline-flex items-center gap-1`}>✓ Marksheet</span>
+                                        <span className={`text-[10px] font-bold text-slate-700 ${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.textPrimaryLight} border border-[#062A78]/40 px-3 py-1 rounded-full inline-flex items-center gap-1`}>✓ Marksheet</span>
                                       )}
                                       {req.submitted_payment_receipts === 1 && (
-                                        <span className={`text-[10px] font-bold text-slate-700 ${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.textPrimaryLight} border border-[#2596be]/40 px-3 py-1 rounded-full inline-flex items-center gap-1`}>✓ Receipt</span>
+                                        <span className={`text-[10px] font-bold text-slate-700 ${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.textPrimaryLight} border border-[#062A78]/40 px-3 py-1 rounded-full inline-flex items-center gap-1`}>✓ Receipt</span>
                                       )}
                                     </div>
                                   )}
@@ -3967,14 +3977,14 @@ function App() {
                             <p className="text-xs text-slate-400 py-4 col-span-full text-center">No academic records found.</p>
                           ) : (
                             studentSemesters.map(sem => (
-                              <div key={sem.semester_id} className="glass-panel rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-lg hover:shadow-[#2596be]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col p-5">
+                              <div key={sem.semester_id} className="glass-panel rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-lg hover:shadow-[#062A78]/20 hover:-translate-y-1 transition-all duration-300 flex flex-col p-5">
                                 <div className="flex justify-between items-start mb-4">
                                   <div>
                                     <h5 className="font-bold text-base leading-tight text-slate-900 dark:text-white mb-1">{sem.semester_name}</h5>
                                     <span className="text-[10px] font-bold text-slate-500 font-mono tracking-wider uppercase">Year: {sem.academic_year}</span>
                                   </div>
                                   {sem.is_active === 1 && (
-                                    <span className={`text-[9px] px-2 py-0.5 uppercase tracking-wider font-bold ${themeClasses.bgPrimaryLight}/10 text-slate-800 dark:text-white rounded-full border border-[#2596be]/30`}>Active</span>
+                                    <span className={`text-[9px] px-2 py-0.5 uppercase tracking-wider font-bold ${themeClasses.bgPrimaryLight}/10 text-slate-800 dark:text-white rounded-full border border-[#062A78]/30`}>Active</span>
                                   )}
                                 </div>
                                 {sem.subject && sem.subject.length > 0 && (
@@ -4017,7 +4027,7 @@ function App() {
                             <p className="text-xs text-slate-400 py-4 col-span-full text-center">No achievements recorded yet.</p>
                           ) : (
                             studentAchievements.map(ach => (
-                              <div key={ach.id} className="glass-panel rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-lg hover:shadow-[#2596be]/20 hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                              <div key={ach.id} className="glass-panel rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-lg hover:shadow-[#062A78]/20 hover:-translate-y-1 transition-all duration-300 group flex flex-col">
                                 <div className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
                                   <AchievementImage 
                                     url={ach.photo_drive_link || ach.badge_image_url} 
@@ -4030,7 +4040,7 @@ function App() {
                                   <div className="flex items-center justify-between mb-2">
                                     <span className="text-[10px] font-bold text-slate-500 font-mono tracking-wider uppercase">{ach.date}</span>
                                     {ach.status && ach.status !== 'string' && (
-                                      <span className={`text-[9px] px-2 py-0.5 uppercase tracking-wider font-bold ${themeClasses.bgPrimaryLight}/10 text-slate-800 dark:text-white rounded-full border border-[#2596be]/30`}>{ach.status}</span>
+                                      <span className={`text-[9px] px-2 py-0.5 uppercase tracking-wider font-bold ${themeClasses.bgPrimaryLight}/10 text-slate-800 dark:text-white rounded-full border border-[#062A78]/30`}>{ach.status}</span>
                                     )}
                                   </div>
                                   <h5 className="font-bold text-base leading-tight text-slate-900 dark:text-white mb-2">{ach.title}</h5>
@@ -4062,7 +4072,7 @@ function App() {
                                   </div>
                                   <p className="text-xs text-slate-600 dark:text-slate-400 pt-1 leading-relaxed">{note.note}</p>
                                   <span className={`inline-block text-[9px] uppercase font-bold px-1.5 py-0.25 rounded mt-2
-                                    ${note.type === 'academic' ? 'bg-purple-100 text-purple-700' :
+                                    ${note.type === 'academic' ? 'bg-blue-100 text-blue-700' :
                                       note.type === 'health' ? 'bg-red-100 text-red-700' :
                                         'bg-amber-100 text-amber-700'}`}
                                   >
@@ -4101,7 +4111,7 @@ function App() {
                                 placeholder="Type counselor observations, notes..."
                                 value={newNoteText}
                                 onChange={(e) => setNewNoteText(e.target.value)}
-                                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 mt-1 focus:outline-none focus:border-purple-500"
+                                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 mt-1 focus:outline-none focus:border-blue-500"
                               ></textarea>
                             </div>
 
@@ -4141,7 +4151,7 @@ function App() {
                   placeholder="Filter by parent or student name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-4 py-2 text-xs rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-violet-600 focus:ring-2 focus:ring-purple-500/20 w-full sm:w-64 transition-all shadow-sm"
+                  className="px-4 py-2 text-xs rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-violet-600 focus:ring-2 focus:ring-blue-500/20 w-full sm:w-64 transition-all shadow-sm"
                 />
               </div>
 
@@ -4149,10 +4159,10 @@ function App() {
                 <table className="w-full text-left border-collapse text-xs min-w-[800px]">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white font-bold">
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Parent / Guardian Name</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setParentColFilters(prev => ({...prev, 'name': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200" /></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Relationship</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setParentColFilters(prev => ({...prev, 'relationship': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200" /></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Child Scholar</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setParentColFilters(prev => ({...prev, 'child': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200" /></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Occupation</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setParentColFilters(prev => ({...prev, 'occupation': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200" /></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Parent / Guardian Name</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setParentColFilters(prev => ({...prev, 'name': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200" /></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Relationship</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setParentColFilters(prev => ({...prev, 'relationship': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200" /></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Child Scholar</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setParentColFilters(prev => ({...prev, 'child': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200" /></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Occupation</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setParentColFilters(prev => ({...prev, 'occupation': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200" /></div></th>
                       <th className="p-4">Contact Phone</th>
                       <th className="p-4 text-right align-top">Actions</th>
                     </tr>
@@ -4193,7 +4203,7 @@ function App() {
                             <button
                               onClick={() => setCreationModal({ type: 'Parent', isOpen: true, isEdit: true, initialData: par })}
                               title={`Edit ${par.name}`}
-                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#2596be]/50 border-[#2596be]/20 dark:border-none flex items-center justify-center`}
+                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#062A78]/50 border-[#062A78]/20 dark:border-none flex items-center justify-center`}
                             >
                               <Pencil size={15} />
                             </button>
@@ -4204,7 +4214,7 @@ function App() {
                               target="_blank" 
                               rel="noreferrer"
                               title={`Call ${par.name} via WhatsApp (${par.phone})`}
-                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white  rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#2596be]/50 border-[#2596be]/20 dark:border-none flex items-center justify-center`}
+                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white  rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#062A78]/50 border-[#062A78]/20 dark:border-none flex items-center justify-center`}
                             >
                               <PhoneCall size={15} />
                             </a>
@@ -4215,7 +4225,7 @@ function App() {
                               target="_blank" 
                               rel="noreferrer"
                               title={`Message ${par.name} on WhatsApp (${par.phone})`}
-                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white  rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#2596be]/50 border-[#2596be]/20 dark:border-none flex items-center justify-center`}
+                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white  rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#062A78]/50 border-[#062A78]/20 dark:border-none flex items-center justify-center`}
                             >
                               <MessageSquare size={15} />
                             </a>
@@ -4262,7 +4272,7 @@ function App() {
                   placeholder="Filter by admin name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-4 py-2 text-xs rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 w-full sm:w-64 transition-all shadow-sm"
+                  className="px-4 py-2 text-xs rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 w-full sm:w-64 transition-all shadow-sm"
                 />
               </div>
 
@@ -4314,7 +4324,7 @@ function App() {
                       <div className="flex items-center gap-2">
                         <button 
                           onClick={() => setSelectedVolunteer(vol)}
-                          className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-400 rounded-lg transition-colors"
+                          className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-400 rounded-lg transition-colors"
                         >
                           Profile
                         </button>
@@ -4334,7 +4344,7 @@ function App() {
                               setCreationModal({ type: 'Admin', isOpen: true, isEdit: true, initialData: vol });
                             }}
                             title={`Edit ${vol.name}`}
-                            className="p-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/40 rounded-lg transition-colors"
+                            className="p-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-colors"
                           >
                             <Pencil size={14} />
                           </button>
@@ -4381,7 +4391,7 @@ function App() {
                   placeholder="Filter by admin name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-4 py-2 text-xs rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 w-full sm:w-64 transition-all shadow-sm"
+                  className="px-4 py-2 text-xs rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 w-full sm:w-64 transition-all shadow-sm"
                 />
               </div>
 
@@ -4389,11 +4399,11 @@ function App() {
                 <table className="w-full text-left border-collapse text-xs min-w-[800px]">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white font-bold">
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Admin Name</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'name': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200" /></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Assigned Department</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'department': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200" /></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Total Service Hours</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'hours': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200" /></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Phone Number</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'phone': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200" /></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Status</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'status': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200" /></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Admin Name</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'name': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200" /></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Assigned Department</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'department': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200" /></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Total Service Hours</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'hours': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200" /></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Phone Number</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'phone': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200" /></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Status</span><input type="text" placeholder="Filter..." onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'status': e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200" /></div></th>
                       <th className="p-4 text-right align-top">Actions</th>
                     </tr>
                   </thead>
@@ -4432,7 +4442,7 @@ function App() {
                           <div className="flex items-center justify-end gap-2">
                             <button 
                               onClick={() => setSelectedVolunteer(vol)}
-                              className={`text-xs ${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.bgPrimaryLight}/50 hover:${themeClasses.bgPrimaryLight}/20 text-black dark:text-white  font-bold px-3 py-1.5 rounded-xl transition-colors border border-[#2596be]/20 dark:border-[#2596be]/60`}
+                              className={`text-xs ${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.bgPrimaryLight}/50 hover:${themeClasses.bgPrimaryLight}/20 text-black dark:text-white  font-bold px-3 py-1.5 rounded-xl transition-colors border border-[#062A78]/20 dark:border-[#062A78]/60`}
                             >
                               View Profile
                             </button>
@@ -4441,7 +4451,7 @@ function App() {
                               target="_blank" 
                               rel="noreferrer"
                               title={`Call ${vol.name} via WhatsApp (${vol.phone})`}
-                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white  rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#2596be]/50 border-[#2596be]/20 dark:border-none flex items-center justify-center`}
+                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white  rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#062A78]/50 border-[#062A78]/20 dark:border-none flex items-center justify-center`}
                             >
                               <PhoneCall size={14} />
                             </a>
@@ -4450,7 +4460,7 @@ function App() {
                               target="_blank" 
                               rel="noreferrer"
                               title={`Message ${vol.name} on WhatsApp (${vol.phone})`}
-                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white  rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#2596be]/50 border-[#2596be]/20 dark:border-none flex items-center justify-center`}
+                              className={`p-2 ${themeClasses.bgPrimaryLight}/10 hover:${themeClasses.bgPrimaryLight}/20 dark:${themeClasses.bgPrimaryLight}/40 dark:hover:${themeClasses.bgPrimaryLight}/60 text-black dark:text-white  rounded-xl transition-all border outline-none focus:ring-2 focus:ring-[#062A78]/50 border-[#062A78]/20 dark:border-none flex items-center justify-center`}
                             >
                               <MessageSquare size={14} />
                             </a>
@@ -4580,7 +4590,7 @@ function App() {
                     placeholder="Search donors..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full sm:w-64 pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-purple-500 transition-colors"
+                    className="w-full sm:w-64 pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
               </div>
@@ -4589,11 +4599,11 @@ function App() {
                 <table className="w-full text-left border-collapse text-xs min-w-[800px]">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-black dark:text-white font-bold">
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Donor Name</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'name': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => d.name).filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Donor Category</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'category': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => d.donorType || d.category || '').filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Total Contribution</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'contribution': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => d.formattedAmount || '').filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Phone Number</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'phone': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => d.phone || '').filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
-                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Status</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'status': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-purple-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => (d as any).status || d.status || '').filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Donor Name</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'name': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => d.name).filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Donor Category</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'category': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => d.donorType || d.category || '').filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Total Contribution</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'contribution': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => d.formattedAmount || '').filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Phone Number</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'phone': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => d.phone || '').filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
+                      <th className="p-4 align-top"><div className="flex flex-col gap-1.5"><span>Status</span><select onClick={(e)=>e.stopPropagation()} onChange={(e) => setDonorColFilters(prev => ({...prev, 'status': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200"><option value="ALL">All</option>{Array.from(new Set(donors.map(d => (d as any).status || d.status || '').filter(Boolean))).sort().map(v => <option key={v} value={v}>{v}</option>)}</select></div></th>
                       <th className="p-4 text-right align-top">Actions</th>
                     </tr>
                   </thead>
@@ -4613,7 +4623,7 @@ function App() {
                           </div>
                         </td>
                         <td className="p-4 font-semibold text-black dark:text-white">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.bgPrimaryLight}/40 text-black dark:text-white border border-[#2596be]/20`}>
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${themeClasses.bgPrimaryLight}/10 dark:${themeClasses.bgPrimaryLight}/40 text-black dark:text-white border border-[#062A78]/20`}>
                             {donor.donorType}
                           </span>
                         </td>
@@ -4987,7 +4997,7 @@ function App() {
                                           <img loading="lazy" referrerPolicy="no-referrer" src={getDriveImageUrl(item.receipt_photo_link, item.receipt_drive_link) || "https://placehold.co/40"} alt="Receipt" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span class="text-[8px] font-bold text-slate-400 p-1 text-center leading-tight">Private</span>'; }} />
                                         </div>
                                       ) : (
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border shadow-sm ${themeClasses.bgPrimaryLight}/10 ${themeClasses.textPrimaryLight} border-[#2596be]/20`}>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border shadow-sm ${themeClasses.bgPrimaryLight}/10 ${themeClasses.textPrimaryLight} border-[#062A78]/20`}>
                                           <CategoryIcon size={18} />
                                         </div>
                                       )}
@@ -5002,7 +5012,7 @@ function App() {
                                             </span>
                                           )}
                                           {item.is_foundation_paid ? (
-                                            <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400 flex items-center gap-0.5">
+                                            <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 flex items-center gap-0.5">
                                               🏦 H3 Paid
                                             </span>
                                           ) : (
@@ -5378,7 +5388,7 @@ function App() {
                             setAuditCurrentIndex(0);
                             setIsAuditModeOpen(true);
                           }}
-                          className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md shadow-indigo-500/25 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
+                          className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-md shadow-indigo-500/25 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
                           title="Open Side-by-Side Rapid Receipt Reconciliation Mode"
                         >
                           <Zap size={15} />
@@ -5438,7 +5448,7 @@ function App() {
                                   >
                                     <td className="px-5 py-4">
                                       <div className="flex flex-col gap-1">
-                                        <span className="font-bold text-[14px] text-slate-900 dark:text-white leading-tight group-hover:text-[#2596be] dark:group-hover:text-blue-400 transition-colors">
+                                        <span className="font-bold text-[14px] text-slate-900 dark:text-white leading-tight group-hover:text-[#062A78] dark:group-hover:text-blue-400 transition-colors">
                                           {item.title}
                                         </span>
                                         <div className="flex gap-2 items-center text-[10px] text-slate-400">
@@ -5769,8 +5779,8 @@ function App() {
                             {/* Grid lines */}
                             <defs>
                               <linearGradient id="costsGradFinance" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#2596be" stopOpacity="0.4" />
-                                <stop offset="100%" stopColor="#2596be" stopOpacity="0" />
+                                <stop offset="0%" stopColor="#062A78" stopOpacity="0.4" />
+                                <stop offset="100%" stopColor="#062A78" stopOpacity="0" />
                               </linearGradient>
                               <clipPath id="chart-sweep-finance">
                                 <motion.rect x="0" y="0" width="600" height="580" initial={{ width: 0 }} animate={{ width: 600 }} transition={{ duration: 1.5, ease: "easeOut" }} />
@@ -5785,7 +5795,7 @@ function App() {
                             <path d={costPolygonPath} fill="url(#costsGradFinance)" clipPath="url(#chart-sweep-finance)" />
 
                             {/* Chart Lines */}
-                            <path d={costPath} fill="none" stroke="#2596be" strokeWidth="3" vectorEffect="non-scaling-stroke" className="drop-shadow-sm" clipPath="url(#chart-sweep-finance)" />
+                            <path d={costPath} fill="none" stroke="#062A78" strokeWidth="3" vectorEffect="non-scaling-stroke" className="drop-shadow-sm" clipPath="url(#chart-sweep-finance)" />
 
                             {/* Data Points */}
                             {costPoints.map((p, i) => (
@@ -6031,7 +6041,7 @@ function App() {
                   {/* Google Street Map Location Search Bar & Geofencer Header */}
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 z-10">
                     <div className="flex items-center gap-2">
-                      <MapPin size={18} className="text-slate-800 dark:text-purple-400" />
+                      <MapPin size={18} className="text-slate-800 dark:text-blue-400" />
                       <h4 className="font-bold text-sm text-white">Google Maps Geofence Radar</h4>
                     </div>
 
@@ -6078,7 +6088,7 @@ function App() {
                                   id: `GF_SEARCH_${Date.now()}`,
                                   name: result.display_name.split(',')[0] + ' Geofence',
                                   shape: 'polygon',
-                                  color: '#2596be',
+                                  color: '#062A78',
                                   lat,
                                   lng: lon,
                                   targetBatch: 'ALL',
@@ -6125,17 +6135,17 @@ function App() {
                           placeholder="Search place name to fence (e.g. Koviloor)..."
                           value={locationSearchQuery}
                           onChange={(e) => setLocationSearchQuery(e.target.value)}
-                          className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-violet-600 focus:ring-2 focus:ring-purple-500/20 shadow-sm font-semibold"
+                          className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-violet-600 focus:ring-2 focus:ring-blue-500/20 shadow-sm font-semibold"
                         />
                         {isSearchingLocation ? (
-                          <RefreshCw size={14} className="absolute left-2.5 top-2 text-purple-500 animate-spin" />
+                          <RefreshCw size={14} className="absolute left-2.5 top-2 text-blue-500 animate-spin" />
                         ) : (
                           <Search size={14} className="absolute left-2.5 top-2 text-slate-400" />
                         )}
                       </div>
                     </form>
                     <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 shadow-sm">
-                    <Filter size={14} className="text-purple-500" />
+                    <Filter size={14} className="text-blue-500" />
                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Group Filter:</span>
                     <select
                       value={selectedGeofenceFilter}
@@ -6162,8 +6172,8 @@ function App() {
                                   map.setView([latitude, longitude], 16);
                                   L.circleMarker([latitude, longitude], {
                                     radius: 8,
-                                    color: '#2596be',
-                                    fillColor: '#2596be',
+                                    color: '#062A78',
+                                    fillColor: '#062A78',
                                     fillOpacity: 0.5
                                   }).addTo(map).bindPopup('You are here!').openPopup();
                                 }
@@ -6176,7 +6186,7 @@ function App() {
                             alert('Geolocation is not supported by your browser.');
                           }
                         }}
-                        className="p-2 bg-purple-50 hover:bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:hover:bg-purple-900/60 dark:text-purple-400 rounded-xl border border-purple-200 dark:border-purple-800 transition-all shadow-sm flex items-center justify-center"
+                        className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:hover:bg-blue-900/60 dark:text-blue-400 rounded-xl border border-blue-200 dark:border-blue-800 transition-all shadow-sm flex items-center justify-center"
                         title="Find My Location"
                       >
                         <Navigation size={18} />
@@ -6229,13 +6239,13 @@ function App() {
                     <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/40 dark:border-slate-700/50">
                       <button
                         onClick={() => setFenceTypeTab('single')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-black tracking-wide uppercase transition-all ${fenceTypeTab === 'single' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-purple-400 shadow-sm border border-slate-200/30' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-black tracking-wide uppercase transition-all ${fenceTypeTab === 'single' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-blue-400 shadow-sm border border-slate-200/30' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
                       >
                         Single ({customGeofences.filter(gf => !gf.polygons || gf.polygons.length <= 1).length})
                       </button>
                       <button
                         onClick={() => setFenceTypeTab('grouped')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-black tracking-wide uppercase transition-all ${fenceTypeTab === 'grouped' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-purple-400 shadow-sm border border-slate-200/30' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-black tracking-wide uppercase transition-all ${fenceTypeTab === 'grouped' ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-blue-400 shadow-sm border border-slate-200/30' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
                       >
                         Grouped ({customGeofences.filter(gf => gf.polygons && gf.polygons.length > 1).length})
                       </button>
@@ -6281,7 +6291,7 @@ function App() {
                         return <Compass size={20} />;
                       };
 
-                      const accentColor = hasViolation ? '#ef4444' : (gf.color || '#2596be');
+                      const accentColor = hasViolation ? '#ef4444' : (gf.color || '#062A78');
 
                       return (
                         <div
@@ -6409,7 +6419,7 @@ function App() {
                                 e.stopPropagation();
                                 setEditingGeofenceGroup(gf);
                               }}
-                              className="text-[10px] font-bold text-slate-800 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-950/80 px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1"
+                              className="text-[10px] font-bold text-slate-800 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/80 px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1"
                             >
                               <Users size={12} />
                               <span>Manage Group</span>
@@ -6552,7 +6562,7 @@ function App() {
 
                     <div className="p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-1.5 hover:shadow-md transition-shadow">
                       <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Total Service Hours</span>
-                      <span className="font-mono font-black text-sm text-[#20002c] dark:text-[#2596be] block">{selectedVolunteer.hoursContributed} Hours Contributed</span>
+                      <span className="font-mono font-black text-sm text-[#20002c] dark:text-[#062A78] block">{selectedVolunteer.hoursContributed} Hours Contributed</span>
                     </div>
                   </>
                 )}
@@ -6665,7 +6675,7 @@ function App() {
 
               {/* Highlight Contribution Box */}
               <div className="glass-panel p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex justify-between items-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-[#2596be] pointer-events-none"></div>
+                <div className="absolute inset-0 bg-[#062A78] pointer-events-none"></div>
                 <div className="relative z-10">
                   <span className="text-[10px] font-bold text-white/80 uppercase tracking-wider block">Total Financial Contribution</span>
                   <span className="text-2xl font-black text-white font-mono">{selectedDonor.formattedAmount}</span>
@@ -6779,7 +6789,7 @@ function App() {
                               setActiveTab('Students');
                               setProfileTab('Overview');
                             }}
-                            className="p-3 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex justify-between items-center cursor-pointer hover:border-[#2596be]/30 dark:hover:border-[#2596be]/50 hover:bg-[#2596be]/5 dark:hover:bg-[#2596be]/20 transition-colors"
+                            className="p-3 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex justify-between items-center cursor-pointer hover:border-[#062A78]/30 dark:hover:border-[#062A78]/50 hover:bg-[#062A78]/5 dark:hover:bg-[#062A78]/20 transition-colors"
                           >
                             <div className="flex items-center gap-3">
                               <div className="overflow-hidden">
@@ -6984,7 +6994,7 @@ function App() {
                         </span>
                       )}
                       {audit?.status === 'SPLIT_BILL' && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 flex items-center gap-1">
                           <Layers size={11} /> Split Bill
                         </span>
                       )}
@@ -7126,7 +7136,7 @@ function App() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 border-b border-slate-100 dark:border-slate-800/60 pb-3">
                   <div>
                     <span className="text-[9px] text-slate-400 font-bold uppercase block">Refund Requested</span>
-                    <span className={`inline-block font-extrabold text-[10px] mt-0.5 px-2 py-0.5 rounded-full ${selectedExpense.refund_requested ? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400' : 'bg-slate-100 text-slate-500'}`}>
+                    <span className={`inline-block font-extrabold text-[10px] mt-0.5 px-2 py-0.5 rounded-full ${selectedExpense.refund_requested ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400' : 'bg-slate-100 text-slate-500'}`}>
                       {selectedExpense.refund_requested ? 'YES' : 'NO'}
                     </span>
                   </div>
@@ -7201,8 +7211,8 @@ function App() {
                           onClick={() => setViewingReceiptModalUrl(getDriveImageUrl(selectedExpense.receipt_photo_link, selectedExpense.receipt_drive_link) || modalReceiptLink)}
                         />
                       ) : (
-                        <a href={selectedExpense.receipt_drive_link!} target="_blank" rel="noopener noreferrer" className="block w-full py-4 text-center border-2 border-dashed border-purple-200 dark:border-purple-900/50 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20">
-                          <span className="text-xs font-bold text-purple-600 dark:text-purple-400">View Document in Google Drive</span>
+                        <a href={selectedExpense.receipt_drive_link!} target="_blank" rel="noopener noreferrer" className="block w-full py-4 text-center border-2 border-dashed border-blue-200 dark:border-blue-900/50 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                          <span className="text-xs font-bold text-blue-600 dark:text-blue-400">View Document in Google Drive</span>
                         </a>
                       )}
                     </div>
@@ -7285,7 +7295,7 @@ function App() {
                                   onClick={() => {
                                     handleSaveAuditRecord(selectedExpense.id, 'SPLIT_BILL', parsedReceiptBill, `Partial claim of ₹${selectedExpense.amount} out of ₹${parsedReceiptBill} receipt`);
                                   }}
-                                  className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition-all"
+                                  className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition-all"
                                 >
                                   <Layers size={12} /> Mark as Split / Partial Bill
                                 </button>
@@ -7892,7 +7902,7 @@ function App() {
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-slate-800 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/15 text-slate-800 flex items-center justify-center font-bold">
                   <MapPin size={18} />
                 </div>
                 <div>
@@ -7932,8 +7942,8 @@ function App() {
                     }
                     const polygonDrawer = new L.Draw.Polygon(map, {
                       shapeOptions: {
-                        color: newZoneColor || '#2596be',
-                        fillColor: newZoneColor || '#2596be',
+                        color: newZoneColor || '#062A78',
+                        fillColor: newZoneColor || '#062A78',
                         fillOpacity: 0.3,
                         weight: 3
                       }
@@ -7954,7 +7964,7 @@ function App() {
                   placeholder="e.g. Hostel Block B - Batch 2026 Fence"
                   value={newZoneName}
                   onChange={(e) => setNewZoneName(e.target.value)}
-                  className="w-full p-2.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 rounded-xl font-bold focus:outline-none focus:border-purple-500"
+                  className="w-full p-2.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 rounded-xl font-bold focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -7965,7 +7975,7 @@ function App() {
               <div>
                 <label className="text-[10px] text-slate-400 block font-bold mb-1">MAP BOUNDARY COLOR</label>
                 <div className="flex items-center gap-3">
-                  {['#2596be', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'].map(col => (
+                  {['#062A78', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'].map(col => (
                     <button
                       key={col}
                       type="button"
@@ -7997,7 +8007,7 @@ function App() {
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[80vh]">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-slate-800 dark:text-purple-400 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-slate-800 dark:text-blue-400 flex items-center justify-center font-bold">
                   <Users size={16} />
                 </div>
                 <div>
@@ -8030,7 +8040,7 @@ function App() {
                       return updated;
                     });
                   }}
-                  className="w-full p-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold focus:outline-none focus:border-purple-500 text-xs"
+                  className="w-full p-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold focus:outline-none focus:border-blue-500 text-xs"
                 />
               </div>
 
@@ -8047,7 +8057,7 @@ function App() {
                       return updated;
                     });
                   }}
-                  className="w-full p-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold focus:outline-none focus:border-purple-500 text-xs"
+                  className="w-full p-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold focus:outline-none focus:border-blue-500 text-xs"
                 >
                   <option value="ALL">All Batches (ALL)</option>
                   {availableBatches.map(b => (
@@ -8063,7 +8073,7 @@ function App() {
                   <select
                     value={modalBatchFilter}
                     onChange={(e) => setModalBatchFilter(e.target.value)}
-                    className="p-1 px-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold text-[10px] text-slate-700 dark:text-slate-200 focus:outline-none focus:border-purple-500"
+                    className="p-1 px-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold text-[10px] text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500"
                   >
                     <option value="ALL">All Batches</option>
                     {availableBatches.map(b => (
@@ -8089,7 +8099,7 @@ function App() {
                       setEditingGeofenceGroup({ ...editingGeofenceGroup, studentIds: newStudentIds });
                       setCustomGeofences(prev => prev.map(gf => gf.id === editingGeofenceGroup.id ? { ...gf, studentIds: newStudentIds } : gf));
                     }}
-                    className="p-1 px-2.5 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-950/80 text-slate-800 dark:text-purple-400 rounded-xl text-[10px] font-bold transition-all border border-purple-200/40"
+                    className="p-1 px-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/80 text-slate-800 dark:text-blue-400 rounded-xl text-[10px] font-bold transition-all border border-blue-200/40"
                   >
                     {(() => {
                       const filteredStudents = students.filter(student => modalBatchFilter === 'ALL' || (student.batch || student.current_year || '2026') === modalBatchFilter);
@@ -8139,7 +8149,7 @@ function App() {
                             return gf;
                           }));
                         }}
-                        className="w-4 h-4 rounded text-slate-800 focus:ring-purple-500 border-slate-300 dark:border-slate-700"
+                        className="w-4 h-4 rounded text-slate-800 focus:ring-blue-500 border-slate-300 dark:border-slate-700"
                       />
                     </label>
                   );
@@ -8217,7 +8227,7 @@ function App() {
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[80vh] space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-slate-800 dark:text-purple-400 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-slate-800 dark:text-blue-400 flex items-center justify-center font-bold">
                   <Layers size={16} />
                 </div>
                 <div>
@@ -8247,7 +8257,7 @@ function App() {
                   placeholder="e.g. Combined Hostel & Office Perimeter"
                   value={mergeTargetName}
                   onChange={(e) => setMergeTargetName(e.target.value)}
-                  className="w-full p-2.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold focus:outline-none focus:border-purple-500"
+                  className="w-full p-2.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -8256,7 +8266,7 @@ function App() {
                 <select
                   value={mergeTargetBatch}
                   onChange={(e) => setMergeTargetBatch(e.target.value)}
-                  className="w-full p-2.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold focus:outline-none focus:border-purple-500"
+                  className="w-full p-2.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl font-bold focus:outline-none focus:border-blue-500"
                 >
                   <option value="ALL">All Batches (ALL)</option>
                   {availableBatches.map(b => (
@@ -8320,7 +8330,7 @@ function App() {
                                   : prev.filter(id => id !== gf.id)
                               );
                             }}
-                            className="w-4 h-4 rounded text-slate-800 focus:ring-purple-500 border-slate-300 dark:border-slate-700"
+                            className="w-4 h-4 rounded text-slate-800 focus:ring-blue-500 border-slate-300 dark:border-slate-700"
                           />
                         </label>
                       );
@@ -8375,7 +8385,7 @@ function App() {
                       id: editingGroupId || savedData.group_id || `GF_GROUP_${Date.now()}`,
                       name: mergeTargetName.trim(),
                       shape: 'polygon',
-                      color: baseParent.color || '#2596be',
+                      color: baseParent.color || '#062A78',
                       targetBatch: mergeTargetBatch,
                       lat: baseParent.lat,
                       lng: baseParent.lng,
@@ -8433,13 +8443,13 @@ function App() {
                 <span>Back</span>
               </button>
 
-              <div className="w-9 h-9 rounded-xl bg-violet-600/30 border border-purple-500/30 text-purple-400 flex items-center justify-center font-bold">
+              <div className="w-9 h-9 rounded-xl bg-violet-600/30 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold">
                 <Compass size={20} />
               </div>
               <div>
                 <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                   Full Screen Satellite Geofencing Radar
-                  <span className="text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-mono">
+                  <span className="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-mono">
                     Batch Mode
                   </span>
                 </h3>
@@ -8450,7 +8460,7 @@ function App() {
             {/* Batch Selector & View Controls inside Fullscreen Header */}
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5">
-                <Filter size={14} className="text-purple-400" />
+                <Filter size={14} className="text-blue-400" />
                 <span className="text-xs font-bold text-slate-300">Filter Batch:</span>
                 <select
                   value={selectedBatchFilter}
@@ -8546,8 +8556,8 @@ function App() {
                     }
                     const polygonDrawer = new L.Draw.Polygon(map, {
                       shapeOptions: {
-                        color: '#2596be',
-                        fillColor: '#2596be',
+                        color: '#062A78',
+                        fillColor: '#062A78',
                         fillOpacity: 0.3,
                         weight: 3
                       }
@@ -8577,7 +8587,7 @@ function App() {
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-purple-500/15 text-slate-800 flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-2xl bg-blue-500/15 text-slate-800 flex items-center justify-center font-bold">
                   <Pencil size={20} />
                 </div>
                 <div>
@@ -8623,7 +8633,7 @@ function App() {
                     id: savedData.zone_id || savedData.id || `GF_DRAWN_${Date.now()}`,
                     name: nameToSave,
                     shape: 'polygon',
-                    color: newZoneColor || '#2596be',
+                    color: newZoneColor || '#062A78',
                     targetBatch: newZoneTargetBatch || 'ALL',
                     lat: pendingDrawnShape.center.lat,
                     lng: pendingDrawnShape.center.lng,
@@ -8673,7 +8683,7 @@ function App() {
                   placeholder="e.g. Koviloor Hostel Perimeter"
                   value={newZoneName}
                   onChange={(e) => setNewZoneName(e.target.value)}
-                  className="w-full p-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white rounded-xl font-bold focus:outline-none focus:border-purple-500"
+                  className="w-full p-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white rounded-xl font-bold focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -8682,7 +8692,7 @@ function App() {
               <div>
                 <label className="text-[10px] text-slate-400 block font-bold mb-1 uppercase tracking-wider">BOUNDARY COLOR</label>
                 <div className="flex items-center gap-3">
-                  {['#2596be', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'].map(col => (
+                  {['#062A78', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'].map(col => (
                     <button
                       key={col}
                       type="button"
@@ -8842,7 +8852,7 @@ function App() {
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                       if (e.currentTarget.parentElement) {
-                        e.currentTarget.parentElement.innerHTML = `<a href="${imgSrc}" target="_blank" class="text-white bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-bold">Open Private Image in Google Drive</a>`;
+                        e.currentTarget.parentElement.innerHTML = `<a href="${imgSrc}" target="_blank" class="text-white bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-bold">Open Private Image in Google Drive</a>`;
                       }
                     }}
                   />
@@ -8859,7 +8869,7 @@ function App() {
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                <Layers className="text-purple-500" size={20} />
+                <Layers className="text-blue-500" size={20} />
                 Fences in {viewingChildFences.name}
               </h3>
               <button
@@ -8873,7 +8883,7 @@ function App() {
             <div className="overflow-y-auto pr-2 space-y-2">
               {viewingChildFences.polygons?.map((poly: any, idx: number) => (
                 <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
                     <Compass size={16} />
                   </div>
                   <span className="font-semibold text-sm text-slate-700 dark:text-slate-300">

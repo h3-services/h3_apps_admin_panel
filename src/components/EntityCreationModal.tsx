@@ -23,7 +23,7 @@ const CustomInput = ({ name, placeholder, type = "text", onChange, required, val
       value={value || ''}
       maxLength={maxLength}
       placeholder={`Enter ${placeholder.toLowerCase()}`}
-      className={`w-full px-4 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
+      className={`w-full px-4 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
     />
   </div>
 );
@@ -37,7 +37,7 @@ const CustomSelect = ({ name, placeholder, onChange, options, required, value }:
         name={name}
         onChange={onChange}
         value={value || ''}
-        className={`w-full px-4 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-semibold text-slate-900 dark:text-white appearance-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
+        className={`w-full px-4 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-semibold text-slate-900 dark:text-white appearance-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
       >
         <option value="" disabled>Select {placeholder.toLowerCase()}</option>
         {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
@@ -58,7 +58,7 @@ const CustomPhoneInput = ({ name, placeholder, onChange, required, value, onCoun
         <select
           value={countryCodeValue || '🇮🇳 IN (+91)'}
           onChange={onCountryCodeChange}
-          className={`w-full px-3 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-semibold text-slate-900 dark:text-white appearance-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
+          className={`w-full px-3 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-semibold text-slate-900 dark:text-white appearance-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
         >
           {countryCodes.map(c => <option key={c.label} value={c.label}>{c.label}</option>)}
         </select>
@@ -74,7 +74,7 @@ const CustomPhoneInput = ({ name, placeholder, onChange, required, value, onCoun
         value={value || ''}
         maxLength={15}
         placeholder="Enter number"
-        className={`w-2/3 px-4 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
+        className={`w-2/3 px-4 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
       />
     </div>
   </div>
@@ -217,7 +217,7 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
           <div className="space-y-6 overflow-y-auto pr-2 max-h-[60vh] custom-scrollbar">
             {/* Basic Info */}
             <div className="bg-slate-50/50 dark:bg-slate-800/20 p-4 rounded-xl border border-slate-200/60 dark:border-slate-700/50 space-y-4">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2"><UserPlus size={16} className="text-purple-500" /> Basic Information</h3>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2"><UserPlus size={16} className="text-blue-500" /> Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <CustomInput name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} />
                 <CustomInput required={!initialData} name="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} />
@@ -354,7 +354,7 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-bold text-slate-800 dark:text-white">Link Students</h3>
-                <button type="button" onClick={() => setShowStudentGrid(false)} className="px-3 py-1.5 text-xs font-bold text-purple-600 bg-purple-50 dark:bg-purple-500/10 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-colors">Done</button>
+                <button type="button" onClick={() => setShowStudentGrid(false)} className="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-500/10 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors">Done</button>
               </div>
               <div className="relative">
                 <Search className="absolute left-3 top-3 text-slate-400" size={18} />
@@ -373,10 +373,10 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
                     <div 
                       key={student.id || student.student_id} 
                       onClick={() => toggleStudentLink(student.id || student.student_id)}
-                      className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
                     >
                       <div className="font-bold text-sm text-slate-800 dark:text-white truncate pr-2">{student.student_name}</div>
-                      {isSelected && <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center shrink-0"><Check size={12} className="text-white" /></div>}
+                      {isSelected && <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shrink-0"><Check size={12} className="text-white" /></div>}
                     </div>
                   );
                 })}
@@ -408,7 +408,7 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
                     <select
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value as 'USD' | 'INR')}
-                      className={`w-[85px] pl-4 pr-8 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-bold text-slate-900 dark:text-white appearance-none text-left cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
+                      className={`w-[85px] pl-4 pr-8 py-3.5 bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 hover:border-slate-300 dark:hover:border-slate-600 text-sm font-bold text-slate-900 dark:text-white appearance-none text-left cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]`}
                     >
                       <option value="INR">INR</option>
                       <option value="USD">USD</option>
@@ -417,7 +417,7 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                   </div>
-                  <div className="relative flex-1 flex items-center bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500/50 focus-within:bg-white dark:focus-within:bg-slate-900 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                  <div className="relative flex-1 flex items-center bg-slate-50/80 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/50 rounded-xl transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500/50 focus-within:bg-white dark:focus-within:bg-slate-900 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                     <div className="absolute left-0 inset-y-0 flex items-center">
                       <div className="h-full py-0 pl-4 pr-3 flex items-center bg-transparent text-slate-600 dark:text-slate-300 font-bold text-sm border-r border-slate-200/80 dark:border-slate-700/50 rounded-l-xl">
                         {currency === 'USD' ? '$' : '₹'}
@@ -507,7 +507,7 @@ export const EntityCreationModal: React.FC<EntityCreationModalProps> = ({ type, 
         {/* Header */}
         <div className="flex justify-between items-center px-8 py-6 border-b border-slate-200/50 dark:border-slate-800/50">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-2xl border border-white/20 shadow-lg shadow-purple-500/20 ${themeClasses.bgGradientMain} text-white`}>
+            <div className={`p-3 rounded-2xl border border-white/20 shadow-lg shadow-blue-500/20 ${themeClasses.bgGradientMain} text-white`}>
               {getTypeIcon()}
             </div>
             <div>
