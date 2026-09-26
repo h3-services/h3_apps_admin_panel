@@ -1416,6 +1416,7 @@ function App() {
       if (key === 'course') return (student.grade || '').toLowerCase().includes(v) || (student.course || '').toLowerCase().includes(v);
       if (key === 'college') return (student.college || '').toLowerCase().includes(v);
       if (key === 'location') return (student.location?.status || '').toLowerCase().includes(v);
+      if (key === 'status') return ((student as any).status || 'Active').toLowerCase().includes(v);
       return true;
     });
 
@@ -3204,7 +3205,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>Student</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'name': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
+                              <select value={studentColFilters.name || 'ALL'} onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'name': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 {Array.from(new Set(students.map(s => s.name).filter(Boolean))).sort().map(n => <option key={n} value={n}>{n}</option>)}
                               </select>
@@ -3219,7 +3220,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>Batch</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'batch': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
+                              <select value={studentColFilters.batch || 'ALL'} onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'batch': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 {availableBatches.map(b => <option key={b} value={b}>Batch {b}</option>)}
                               </select>
@@ -3228,7 +3229,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>Course</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'course': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
+                              <select value={studentColFilters.course || 'ALL'} onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'course': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 {Array.from(new Set(students.map(s => (s.course && s.course !== 'N/A') ? s.course : (s.grade && s.grade !== 'N/A' ? s.grade.replace(/\s*-\s*\d+[a-zA-Z]{2}\s*Year\s*/i, ' ').trim() : '')).filter(c => Boolean(c) && c !== 'N/A'))).sort().map(c => <option key={c} value={c}>{c}</option>)}
                               </select>
@@ -3237,7 +3238,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>College Name</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'college': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
+                              <select value={studentColFilters.college || 'ALL'} onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'college': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 {Array.from(new Set(students.map(s => s.college).filter(Boolean))).sort().map(c => <option key={c} value={c}>{c}</option>)}
                               </select>
@@ -3246,7 +3247,7 @@ function App() {
                           <th className="p-4 align-top">
                             <div className="flex flex-col gap-1.5">
                               <span>Status</span>
-                              <select onClick={(e)=>e.stopPropagation()} onChange={(e) => setAdminColFilters(prev => ({...prev, 'status': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
+                              <select value={studentColFilters.status || 'ALL'} onClick={(e)=>e.stopPropagation()} onChange={(e) => setStudentColFilters(prev => ({...prev, 'status': e.target.value === 'ALL' ? '' : e.target.value}))} className="w-full min-w-[80px] px-2 py-1 text-[10px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 font-normal focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-200">
                                 <option value="ALL">All</option>
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
