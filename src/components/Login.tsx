@@ -22,7 +22,7 @@ export const Login = ({ onLoginSuccess }: LoginProps) => {
       
       sessionStorage.setItem('authToken', token);
 
-      const envToken = import.meta.env.VITE_API_TOKEN || 'Hope3-Apps-Team';
+      const envToken = import.meta.env.VITE_API_TOKEN;
       const res = await fetch('https://h3apps-api.hope3.org/api/v1/users/?limit=10000', {
         headers: {
           'Authorization': `Bearer ${envToken}`
