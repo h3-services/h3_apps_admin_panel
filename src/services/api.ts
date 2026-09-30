@@ -41,6 +41,8 @@ async function apiFetch<T>(path: string, fallback: T, retries = 1): Promise<T> {
   try {
     const authHeaders = await getAuthHeader();
     const response = await fetch(`${BASE_URL}${path}`, {
+      method: 'GET',
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
         ...authHeaders,
@@ -426,7 +428,7 @@ export const apiService = {
         }
       }
 
-      const name = payload.donor_name || payload.student_name || payload.parent_name || payload.full_name || payload.organization_name || 'Unknown';
+      const name = payload.name || payload.donor_name || payload.student_name || payload.parent_name || payload.full_name || payload.organization_name || 'Unknown';
       const userPayload = {
         user_name: name,
         user_email: email,
@@ -546,13 +548,13 @@ export const apiService = {
       const authHeaders = await getAuthHeader();
       const userId = await apiService.createUserForEntity(payload);
       
-      const cleanPayload = { ...payload, user_id: userId };
+      const cleanPayload = { ...payload, user_id: userId, student_name: payload.name };
       delete cleanPayload.email;
       delete cleanPayload.phone;
       delete cleanPayload.name;
 
       const existing = await apiService.getStudents(true);
-      const alreadyExists = existing.find((s: any) => s.user_id === userId);
+      const alreadyExists = existing.find((s: any) => s.user_id === userId && userId !== "00000000-0000-0000-0000-000000000000");
       if (alreadyExists) {
         if (alreadyExists.is_deleted === 1) {
           await apiService.updateStudent(alreadyExists.id, {
@@ -607,7 +609,7 @@ export const apiService = {
       };
 
       const existing = await apiService.getVolunteers(true);
-      const alreadyExists = existing.find((v: any) => v.user_id === userId);
+      const alreadyExists = existing.find((v: any) => v.user_id === userId && userId !== "00000000-0000-0000-0000-000000000000");
       if (alreadyExists) {
         if (alreadyExists.is_deleted === 1) {
           await apiService.updateVolunteer(alreadyExists.id || (alreadyExists as any).volunteer_id, {
@@ -665,7 +667,7 @@ export const apiService = {
       // Parents can be linked to multiple students, so we don't strictly block by user_id alone here
       // But we can check if a parent with this exact user_id AND student_id exists
       const existing = await apiFetch<any[]>('/api/v1/parents/', []);
-      const alreadyExists = existing?.find((p: any) => p.user_id === userId && p.student_id === cleanPayload.student_id);
+      const alreadyExists = existing?.find((p: any) => p.user_id === userId && userId !== "00000000-0000-0000-0000-000000000000" && p.student_id === cleanPayload.student_id);
       if (alreadyExists) {
         if (alreadyExists.is_deleted === 1) {
           await apiService.updateParent(alreadyExists.parent_id || alreadyExists.id, {
@@ -718,7 +720,7 @@ export const apiService = {
       };
 
       const existing = await apiService.getDonors(true);
-      const alreadyExists = existing.find((d: any) => d.user_id === userId);
+      const alreadyExists = existing.find((d: any) => d.user_id === userId && userId !== "00000000-0000-0000-0000-000000000000");
       if (alreadyExists) {
         if (alreadyExists.is_deleted === 1 || (alreadyExists as any).status === 'Past Benefactor') {
           await apiService.updateDonor(alreadyExists.donor_id || alreadyExists.id, {
