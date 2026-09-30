@@ -1818,9 +1818,10 @@ function App() {
       }
       await loadDataFromApi();
     } else if (type === 'Donor') {
+      const isOrg = data.donor_type === 'Organization';
       const payload = {
-        donor_name: data.name || 'Unknown',
-        organization_name: data.name || 'Unknown',
+        donor_name: isOrg ? '' : (data.name || 'Unknown'),
+        organization_name: isOrg ? (data.name || 'Unknown') : '',
         email: data.email,
         phone: data.phone,
         address: data.address || '',
@@ -1828,7 +1829,7 @@ function App() {
         amount_inr: Number(data.amount_inr || data.contribution || 0),
         amount_usd: Number(data.amount_usd || 0),
         contribution: Number(data.amount_inr || data.contribution || 0),
-        donor_type: "individual",
+        donor_type: isOrg ? "organization" : "individual",
         user_id: data.user_id || "00000000-0000-0000-0000-000000000000",
         is_deleted: 0,
         profile_photo_link: ""
