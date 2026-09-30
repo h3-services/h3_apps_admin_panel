@@ -14,7 +14,7 @@ const BASE_URL = (import.meta.env.VITE_API_URL || 'https://h3apps-api.hope3.org'
 async function getAuthHeader(): Promise<Record<string, string>> {
   try {
     // 1. Check for env static token (VITE_API_TOKEN)
-    const envToken = import.meta.env.VITE_API_TOKEN || 'Hope3-Apps-Team';
+    const envToken = import.meta.env.VITE_API_TOKEN;
     if (envToken) {
       return { 'Authorization': `Bearer ${envToken}` };
     }
@@ -34,7 +34,7 @@ async function getAuthHeader(): Promise<Record<string, string>> {
   } catch (err) {
     console.warn('Could not retrieve auth token:', err);
   }
-  return { 'Authorization': 'Bearer Hope3-Apps-Team' };
+  return {};
 }
 
 async function apiFetch<T>(path: string, fallback: T, retries = 1): Promise<T> {
