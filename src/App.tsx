@@ -938,6 +938,17 @@ function App() {
 
       const L = (window as any).L;
 
+      // Preserve map center and zoom before destroying it
+      let savedCenter: [number, number] | null = null;
+      let savedZoom: number | null = null;
+      if ((window as any).leafletMapInstance) {
+        try {
+          const center = (window as any).leafletMapInstance.getCenter();
+          savedCenter = [center.lat, center.lng];
+          savedZoom = (window as any).leafletMapInstance.getZoom();
+        } catch (e) { }
+      }
+
       // Clear previous map instance if initialized
       if ((mapContainer as any)._leaflet_id) {
         (mapContainer as any)._leaflet_id = null;
@@ -945,20 +956,20 @@ function App() {
       }
 
       // Default Map Instance initialized
-      const initialCenter: [number, number] = customGeofences.length > 0
+      const initialCenter: [number, number] = savedCenter || (customGeofences.length > 0
         ? [customGeofences[0].lat, customGeofences[0].lng]
-        : [10.0815515, 78.7463343];
+        : [10.0815515, 78.7463343]);
 
       const map = L.map(containerId, {
         center: initialCenter,
-        zoom: customGeofences.length > 0 ? 17 : 14,
+        zoom: savedZoom || (customGeofences.length > 0 ? 17 : 14),
         zoomControl: true
       });
 
       (window as any).leafletMapInstance = map;
 
       // Auto-detect Admin's Live Real GPS Location via Browser Geolocation API
-      if (navigator.geolocation) {
+      if (navigator.geolocation && !savedCenter) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const userLat = position.coords.latitude;
@@ -6095,9 +6106,28 @@ function App() {
 
                               if (polygonCoords.length > 0) {
                                 // Save & Draw Geofence Boundary over HD Satellite Imagery
+                                const geofenceName = result.display_name.split(',')[0] + ' Geofence';
+
+                                const apiPayload = {
+                                  name: geofenceName,
+                                  description: `Geofence mapped via search for ${geofenceName}`,
+                                  color: '#062A78',
+                                  zone_type: 'campus',
+                                  target_batch: 'ALL',
+                                  coordinates: JSON.stringify({
+                                    center: { lat, lng: lon },
+                                    polygons: [{ name: 'Default Zone', coords: polygonCoords }]
+                                  })
+                                };
+
+                                let savedData = null;
+                                try {
+                                  savedData = await apiService.createGeofence(apiPayload);
+                                } catch { }
+
                                 const newGeofence = {
-                                  id: `GF_SEARCH_${Date.now()}`,
-                                  name: result.display_name.split(',')[0] + ' Geofence',
+                                  id: savedData?.zone_id || savedData?.id || `GF_SEARCH_${Date.now()}`,
+                                  name: geofenceName,
                                   shape: 'polygon',
                                   color: '#062A78',
                                   lat,
@@ -6107,9 +6137,6 @@ function App() {
                                 };
 
                                 setCustomGeofences(prev => [...prev, newGeofence]);
-                                try {
-                                  await apiService.createGeofence(newGeofence);
-                                } catch { }
 
                                 // Draw interactive boundary layer
                                 const poly = L.polygon(polygonCoords, {
