@@ -1694,7 +1694,7 @@ function App() {
         profile_photo_link: data.profile_photo_link || "",
         hostel_room: data.hostel_room || "",
         batch: data.batch || 'Batch 2026',
-        blood_group: data.blood_group || "Unknown",
+        blood_group: (data.blood_group && data.blood_group !== 'Unknown') ? data.blood_group.slice(0, 5) : "",
         landmark: data.landmark || "",
         area: data.area || "",
         district: data.district || "",
