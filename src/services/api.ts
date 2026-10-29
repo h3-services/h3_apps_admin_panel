@@ -580,15 +580,21 @@ export const apiService = {
         return await res.json();
       }
 
-      if (res.status === 422 || res.status === 400) {
-        const errDetail = await res.text();
-        console.warn("FastAPI Error details:", errDetail);
+      let errMessage = `Error ${res.status}: Failed to create student`;
+      try {
+        const errJson = await res.json();
+        if (errJson.detail) {
+          errMessage = typeof errJson.detail === 'string' ? errJson.detail : JSON.stringify(errJson.detail);
+        }
+      } catch {
+        const errText = await res.text();
+        if (errText) errMessage = errText;
       }
-
-      return null;
-    } catch (err) {
+      console.warn("FastAPI Error details:", errMessage);
+      throw new Error(errMessage);
+    } catch (err: any) {
       console.error("Error creating student:", err);
-      return null;
+      throw err;
     }
   },
 

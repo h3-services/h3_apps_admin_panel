@@ -1754,7 +1754,7 @@ function App() {
         }
       } else {
         const res = await apiService.createStudent(payload);
-        if (!res) throw new Error("Duplicate or soft-deleted record exists");
+        if (!res) throw new Error("Failed to create student");
       }
       await loadDataFromApi();
     } else if (type === 'Parent') {
